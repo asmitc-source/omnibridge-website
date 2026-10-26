@@ -1,6 +1,14 @@
 -- =============================================================================
 -- OmniBridge Phase 1 waitlist: schema, referral position logic, rate limiting
--- DRAFT FOR REVIEW. It has not been applied to any Supabase project.
+-- Contract v0.2 (approved by Product Lead with fixes, 2026-10-27).
+-- Not yet applied to any Supabase project. Target: lpjcseynhhbdxrtnzkii.
+--
+-- v0.2 fixes in this file:
+--   * The waitlist total is private: no function or view returns `total`.
+--   * Self-referral via plus/dot variants earns no credit (site plan §e):
+--     see waitlist_referral_identity_key(). Computed on the fly, nothing stored.
+--   * QA cleanup: waitlist_purge_qa_rows() and waitlist_clear_rate_limits()
+--     (service_role only).
 --
 -- Access model:
 --   * RLS is enabled on every table and NO policies are created, so the
@@ -143,6 +151,48 @@ end;
 $$;
 
 -- -----------------------------------------------------------------------------
+-- Referral identity key (used ONLY to decide referral credit, never for dedupe
+-- and never stored). Derived from the normalised email:
+--   * local part: drop everything from the first '+' (all domains)
+--   * gmail.com / googlemail.com: also drop dots, map googlemail.com -> gmail.com
+-- If the referrer and the referred signup share this key, the referral is a
+-- self-referral ("plus/dot tricks", site plan §e) and earns no credit.
+-- -----------------------------------------------------------------------------
+create or replace function public.waitlist_referral_identity_key(p_email text)
+returns text
+language plpgsql
+immutable
+strict
+set search_path = ''
+as $$
+declare
+  v_email  text := lower(btrim(p_email));
+  v_at     integer;
+  v_local  text;
+  v_domain text;
+begin
+  -- Split at the LAST '@' (the app guarantees exactly one).
+  v_at := length(v_email) - strpos(reverse(v_email), '@') + 1;
+  if strpos(v_email, '@') = 0 then
+    return v_email;
+  end if;
+  v_local  := substr(v_email, 1, v_at - 1);
+  v_domain := substr(v_email, v_at + 1);
+
+  if strpos(v_local, '+') > 1 then
+    v_local := split_part(v_local, '+', 1);
+  end if;
+
+  if v_domain in ('gmail.com', 'googlemail.com') then
+    v_domain := 'gmail.com';
+    v_local  := replace(v_local, '.', '');
+  end if;
+
+  return v_local || '@' || v_domain;
+end;
+$$;
+
+-- -----------------------------------------------------------------------------
 -- Deterministic positions
 --   signup_order      = row_number() over (order by created_at, id)
 --   referrals         = count of referred signups that qualify (see below)
@@ -150,10 +200,18 @@ $$;
 --                       where bump = referral_bump if referral_bump_enabled else 0
 --   queue_position    = row_number() over (order by effective_score, created_at, id)
 -- A qualifying referral: referred row exists (one per unique email), is not
--- the referrer itself, optionally has a 'sent' confirmation, and optionally
--- comes from a different ip_hash than the referrer.
+-- the referrer itself, does not share the referrer's identity key (plus/dot
+-- variants), optionally has a 'sent' confirmation, and optionally comes from
+-- a different ip_hash than the referrer.
+-- The waitlist total is private (v0.2): the view does not expose it.
 -- -----------------------------------------------------------------------------
-create or replace view public.waitlist_positions
+-- Drop first: v0.1 had a `total` column and different function return types,
+-- which CREATE OR REPLACE cannot change.
+drop function if exists public.waitlist_position_by_code(text);
+drop function if exists public.waitlist_signup(text, text, text, text, text, text, text);
+drop view if exists public.waitlist_positions;
+
+create view public.waitlist_positions
 with (security_invoker = true)
 as
 with s as (select * from public.waitlist_settings where id),
@@ -168,6 +226,8 @@ refs as (
   join public.waitlist_signups ref on ref.id = r.referred_by
   cross join s
   where r.referred_by <> r.id
+    and public.waitlist_referral_identity_key(r.email)
+        <> public.waitlist_referral_identity_key(ref.email)
     and (not s.require_sent_confirmation or r.confirmation_email_status = 'sent')
     and (s.count_same_ip_referrals
          or r.ip_hash is null or ref.ip_hash is null
@@ -183,18 +243,17 @@ scored as (
   left join refs f on f.referrer_id = o.id
 )
 select id, referral_code, created_at, signup_order, referral_count, effective_score,
-       row_number() over (order by effective_score, created_at, id) as queue_position,
-       count(*) over () as total
+       row_number() over (order by effective_score, created_at, id) as queue_position
 from scored;
 
 -- Position lookup by referral code (never exposes the email).
 create or replace function public.waitlist_position_by_code(p_code text)
-returns table (queue_position bigint, total bigint, referral_count integer)
+returns table (queue_position bigint, referral_count integer)
 language sql
 stable
 set search_path = ''
 as $$
-  select p.queue_position, p.total, p.referral_count
+  select p.queue_position, p.referral_count
   from public.waitlist_positions p
   where p.referral_code = lower(btrim(p_code));
 $$;
@@ -217,7 +276,6 @@ create or replace function public.waitlist_signup(
   referral_code text,
   already_registered boolean,
   queue_position bigint,
-  total bigint,
   referral_count integer
 )
 language plpgsql
@@ -271,7 +329,7 @@ begin
   end if;
 
   return query
-    select p.id, p.referral_code, v_existing, p.queue_position, p.total, p.referral_count
+    select p.id, p.referral_code, v_existing, p.queue_position, p.referral_count
     from public.waitlist_positions p
     where p.id = v_id;
 end;
@@ -285,6 +343,72 @@ volatile
 set search_path = ''
 as $$
   update public.waitlist_signups set confirmation_email_status = p_status where id = p_id;
+$$;
+
+-- -----------------------------------------------------------------------------
+-- QA cleanup (service_role only; run by Backend on request, results logged).
+-- QA rows are exactly: local part starting 'ob-qa+' at domain example.com.
+-- example.com is rejected by the API in production, so no real signup can match.
+-- -----------------------------------------------------------------------------
+
+-- Clears ALL rate-limit rows (e.g. after the QA 429 test). Returns before/after.
+create or replace function public.waitlist_clear_rate_limits()
+returns table (rate_limit_rows_before bigint, rate_limit_rows_after bigint)
+language plpgsql
+volatile
+set search_path = ''
+as $$
+declare
+  v_before bigint;
+begin
+  select count(*) into v_before from public.waitlist_rate_limits;
+  delete from public.waitlist_rate_limits where true;
+  return query select v_before, (select count(*) from public.waitlist_rate_limits);
+end;
+$$;
+
+-- Deletes QA signups and clears rate-limit rows. Non-QA rows that were referred
+-- by a QA row get referred_by = null first (explicit, same effect as the FK's
+-- ON DELETE SET NULL). Non-QA rows are otherwise untouched.
+create or replace function public.waitlist_purge_qa_rows()
+returns table (
+  signups_before bigint,
+  qa_signups_deleted bigint,
+  signups_after bigint,
+  rate_limit_rows_before bigint,
+  rate_limit_rows_after bigint
+)
+language plpgsql
+volatile
+set search_path = ''
+as $$
+declare
+  v_signups_before bigint;
+  v_deleted bigint;
+  v_rl_before bigint;
+begin
+  select count(*) into v_signups_before from public.waitlist_signups;
+  select count(*) into v_rl_before from public.waitlist_rate_limits;
+
+  update public.waitlist_signups w set referred_by = null
+  where not (left(w.email, 6) = 'ob-qa+' and right(w.email, 12) = '@example.com')
+    and w.referred_by in (
+      select q.id from public.waitlist_signups q
+      where left(q.email, 6) = 'ob-qa+' and right(q.email, 12) = '@example.com');
+
+  delete from public.waitlist_signups w
+  where left(w.email, 6) = 'ob-qa+' and right(w.email, 12) = '@example.com';
+  get diagnostics v_deleted = row_count;
+
+  delete from public.waitlist_rate_limits where true;
+
+  return query select
+    v_signups_before,
+    v_deleted,
+    (select count(*) from public.waitlist_signups),
+    v_rl_before,
+    (select count(*) from public.waitlist_rate_limits);
+end;
 $$;
 
 -- -----------------------------------------------------------------------------
@@ -309,9 +433,15 @@ revoke all on function public.waitlist_generate_referral_code() from public, ano
 revoke all on function public.waitlist_position_by_code(text) from public, anon, authenticated;
 revoke all on function public.waitlist_signup(text, text, text, text, text, text, text) from public, anon, authenticated;
 revoke all on function public.waitlist_set_email_status(uuid, text) from public, anon, authenticated;
+revoke all on function public.waitlist_referral_identity_key(text) from public, anon, authenticated;
+revoke all on function public.waitlist_clear_rate_limits() from public, anon, authenticated;
+revoke all on function public.waitlist_purge_qa_rows() from public, anon, authenticated;
 
 grant execute on function public.waitlist_rate_limit_hit(text, integer, integer) to service_role;
 grant execute on function public.waitlist_generate_referral_code() to service_role;
 grant execute on function public.waitlist_position_by_code(text) to service_role;
 grant execute on function public.waitlist_signup(text, text, text, text, text, text, text) to service_role;
 grant execute on function public.waitlist_set_email_status(uuid, text) to service_role;
+grant execute on function public.waitlist_referral_identity_key(text) to service_role;
+grant execute on function public.waitlist_clear_rate_limits() to service_role;
+grant execute on function public.waitlist_purge_qa_rows() to service_role;

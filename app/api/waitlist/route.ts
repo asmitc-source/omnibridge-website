@@ -3,6 +3,7 @@ import { env } from "@/lib/env";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { normaliseEmail, isValidEmailSyntax, emailDomain } from "@/lib/email";
 import { isDisposableDomain } from "@/lib/disposable";
+import { isBlockedReservedEmail } from "@/lib/reservedDomains";
 import { clientIp, hashIp } from "@/lib/ipHash";
 import { hitRateLimit } from "@/lib/rateLimit";
 import { isHoneypotTripped } from "@/lib/honeypot";
@@ -20,7 +21,6 @@ type SignupRow = {
   referral_code: string;
   already_registered: boolean;
   queue_position: number;
-  total: number;
   referral_count: number;
 };
 
@@ -75,6 +75,11 @@ export async function POST(req: NextRequest) {
     if (!isValidEmailSyntax(email)) {
       return jsonError(400, "invalid_email", "Please enter a valid work email.");
     }
+    // Reserved test domains (example.com, *.test, ...) are invalid unless allowlisted
+    // via WAITLIST_TEST_EMAIL_DOMAINS on preview/dev. Ignored in production.
+    if (isBlockedReservedEmail(email, process.env)) {
+      return jsonError(400, "invalid_email", "Please enter a valid work email.");
+    }
     if (isDisposableDomain(emailDomain(email))) {
       return jsonError(400, "disposable_email", "Please use a non-disposable work email.");
     }
@@ -123,7 +128,6 @@ export async function POST(req: NextRequest) {
     return jsonOk(row.already_registered ? 200 : 201, {
       already_registered: row.already_registered,
       position: Number(row.queue_position),
-      total: Number(row.total),
       referral_code: row.referral_code,
       share_url: shareUrl,
     });

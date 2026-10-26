@@ -39,15 +39,17 @@ Copy `.env.example` to `.env.local`. Every variable is server-only. None use the
 | `RESEND_API_KEY` | only if email is on | Resend API key. |
 | `RESEND_FROM` | only if email is on | Sender, for example `OmniBridge <waitlist@your-domain>`. |
 | `RESEND_REPLY_TO` | no | Optional reply-to address. |
+| `WAITLIST_UNSUBSCRIBE_URL` | only if email is on | Merge value for `{{unsubscribe_url}}`. The confirmation email does not send while this is empty. |
 | `WAITLIST_SIGNUP_RATE_LIMIT` | no | Default `5`. |
 | `WAITLIST_SIGNUP_RATE_WINDOW_SECONDS` | no | Default `600`. |
 | `WAITLIST_POSITION_RATE_LIMIT` | no | Default `30`. |
 | `WAITLIST_POSITION_RATE_WINDOW_SECONDS` | no | Default `600`. |
 | `WAITLIST_CANONICALISE_GMAIL` | no | Default `false`. Not wired into the database unique index. See the API contract. |
+| `WAITLIST_TEST_EMAIL_DOMAINS` | no | Preview and local dev only. Comma-separated reserved domains (for example `example.com`) accepted solely for `ob-qa+<id>@` addresses. Ignored in production. Leave empty on production. |
 
 ## Database migration
 
-Schema: [`supabase/migrations/0001_waitlist.sql`](supabase/migrations/0001_waitlist.sql). It has not been applied to a hosted project from this repo.
+Schema: [`supabase/migrations/0001_waitlist.sql`](supabase/migrations/0001_waitlist.sql). Backend has applied this migration to the Supabase project. This repo does not contain database credentials. To apply or re-apply it locally (the file is idempotent):
 
 Apply it with any Postgres client against the database you intend to use:
 

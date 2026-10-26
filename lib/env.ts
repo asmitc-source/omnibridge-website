@@ -34,6 +34,8 @@ export const env = {
   /** e.g. "OmniBridge <waitlist@TODO-domain>" - pending Claire's domain decision. */
   resendFrom: () => optional("RESEND_FROM"),
   resendReplyTo: () => optional("RESEND_REPLY_TO"),
+  /** Merge value for {{unsubscribe_url}}. Email will not send until this is set (no endpoint exists yet). */
+  unsubscribeUrl: () => optional("WAITLIST_UNSUBSCRIBE_URL"),
   /** Public site origin used to build share URLs, e.g. https://example.com (no trailing slash). */
   siteUrl: () => (optional("SITE_URL") ?? "http://localhost:3000").replace(/\/+$/, ""),
   /** Comma-separated list of allowed Origin headers for POST. Empty = do not enforce. */

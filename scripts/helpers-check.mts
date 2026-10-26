@@ -1,5 +1,5 @@
 // Quick local checks of lib helpers + email template render. Run:
-//   IP_HASH_SALT=test npx tsx --conditions=react-server scripts/helpers-check.mts
+//   IP_HASH_SALT=test npx tsx --tsconfig scripts/tsconfig.test.json --require ./scripts/stub-server-only.cjs scripts/helpers-check.mts
 import assert from "node:assert/strict";
 import { createElement } from "react";
 import { render } from "@react-email/components";
@@ -8,7 +8,9 @@ import { isDisposableDomain } from "../lib/disposable";
 import { hashIp, clientIp } from "../lib/ipHash";
 import { isHoneypotTripped, HONEYPOT_FIELD } from "../lib/honeypot";
 import { waitlistBodySchema } from "../lib/validation";
-import WaitlistConfirmation from "../emails/WaitlistConfirmation";
+import * as WC from "../emails/WaitlistConfirmation";
+import { EMAIL_CONFIRM_COPY, emailCopyBlockers } from "../lib/copy/emailConfirm";
+import { readFileSync } from "node:fs";
 
 const results: string[] = [];
 const check = (name: string, fn: () => void) => {
@@ -39,7 +41,7 @@ check("ip hash is 64-hex HMAC, deterministic, never raw ip", () => {
   assert.match(h, /^[0-9a-f]{64}$/);
   assert.equal(h, hashIp("203.0.113.7"));
   assert.notEqual(h, hashIp("203.0.113.8"));
-  assert.ok(!h.includes("203"));
+  assert.ok(!h.includes("203.0.113.7")); // raw IP never appears (a hex digest can contain "203" by chance)
   assert.equal(hashIp(null), null);
 });
 check("client ip from x-forwarded-for first entry", () => {
@@ -60,13 +62,39 @@ check("schema: type enum + optional fields + ref sanitised", () => {
   assert.ok(!waitlistBodySchema.safeParse({ email: "a@b.co", type: "buyer", agents_used: "x".repeat(1001) }).success);
 });
 
-const el = createElement(WaitlistConfirmation, { position: 42, shareUrl: "https://example.test/?ref=abcd2345" });
+// CJS/ESM interop under tsx: the default export may arrive wrapped.
+const WCm = WC as unknown as { default: unknown; waitlistConfirmationSubject?: unknown };
+const inner = (WCm.default ?? {}) as Record<string, unknown>;
+const WaitlistConfirmation = (typeof WCm.default === "function" ? WCm.default : inner.default) as typeof WC.default;
+const waitlistConfirmationSubject = (WCm.waitlistConfirmationSubject ?? inner.waitlistConfirmationSubject) as typeof WC.waitlistConfirmationSubject;
+const props = {
+  position: 42,
+  shareUrl: "https://ob.test/?ref=abcd2345",
+  siteUrl: "https://ob.test",
+  privacyUrl: "https://ob.test/privacy",
+  unsubscribeUrl: "https://ob.test/unsubscribe?t=x",
+};
+const el = createElement(WaitlistConfirmation, props);
 const html = await render(el);
 const text = await render(el, { plainText: true });
-check("email template renders html + text with position and share url", () => {
-  assert.ok(html.includes("42") && html.includes("https://example.test/?ref=abcd2345"));
-  assert.ok(text.includes("PLACEHOLDER"));
+check("email template renders copy deck v1.1 strings with merge tags filled", () => {
+  assert.equal(waitlistConfirmationSubject(props), "You're #42 on the OmniBridge waitlist");
+  assert.ok(text.includes("You're on the OmniBridge waitlist. Your spot is #42."));
+  assert.ok(text.includes("Your link: https://ob.test/?ref=abcd2345"));
+  assert.ok(text.includes("Unsubscribe: https://ob.test/unsubscribe?t=x · Privacy: https://ob.test/privacy"));
+  assert.ok(html.includes("https://ob.test/?ref=abcd2345"));
+  assert.ok(!/TODO\(copy\)|\[PLACEHOLDER|\{\{/.test(text + html), "leftover TODO/PLACEHOLDER/merge tag");
+});
+check("email copy map is byte-identical to copy deck v1.1 Appendix A", () => {
+  const deck = readFileSync("/workspace/omnibridge/copy/omnibridge-copy-deck-v1.1.md", "utf8");
+  for (const [k, v] of Object.entries(EMAIL_CONFIRM_COPY)) {
+    assert.ok(deck.includes(`  ${JSON.stringify(k)}: ${JSON.stringify(v)}`), `mismatch: ${k}`);
+  }
+});
+check("send gate: deck placeholders ([LEGAL ENTITY], omnibridge.example) block sending", () => {
+  const blockers = emailCopyBlockers({ position: 1, share_url: "s", site_url: "s", privacy_url: "p", unsubscribe_url: "u" });
+  assert.deepEqual(blockers, ["email.confirm.footer.entity"]);
 });
 console.log(results.join("\n"));
-console.log("--- plain-text render of placeholder email ---\n" + text);
+console.log("--- plain-text render of confirmation email (copy deck v1.1) ---\n" + text);
 if (results.some((r) => r.startsWith("FAIL"))) process.exit(1);

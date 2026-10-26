@@ -2,7 +2,12 @@ import "server-only";
 import { Resend } from "resend";
 import { render } from "@react-email/components";
 import { createElement } from "react";
-import WaitlistConfirmation, { WAITLIST_CONFIRMATION_SUBJECT } from "../emails/WaitlistConfirmation";
+import WaitlistConfirmation, {
+  mergeVars,
+  waitlistConfirmationSubject,
+  type WaitlistConfirmationProps,
+} from "../emails/WaitlistConfirmation";
+import { emailCopyBlockers } from "./copy/emailConfirm";
 import { env } from "./env";
 import { supabaseAdmin } from "./supabaseAdmin";
 
@@ -21,17 +26,30 @@ export async function sendWaitlistConfirmation(args: {
 }): Promise<Status> {
   const apiKey = env.resendApiKey();
   const from = env.resendFrom();
+  const unsubscribeUrl = env.unsubscribeUrl();
+  const props: WaitlistConfirmationProps = {
+    position: args.position,
+    shareUrl: args.shareUrl,
+    siteUrl: env.siteUrl(),
+    privacyUrl: `${env.siteUrl()}/privacy`,
+    unsubscribeUrl: unsubscribeUrl ?? "",
+  };
   let status: Status;
 
   if (!env.emailEnabled() || !apiKey || !from) {
     console.warn("[waitlist] confirmation email disabled or RESEND_API_KEY / RESEND_FROM not set; skipping");
     status = "skipped";
+  } else if (!unsubscribeUrl || emailCopyBlockers(mergeVars(props)).length > 0) {
+    // Hard gate: never send while the copy still has placeholders ([LEGAL ENTITY],
+    // hello@omnibridge.example) or there is no unsubscribe URL.
+    console.warn(
+      "[waitlist] confirmation email blocked: placeholders in copy or WAITLIST_UNSUBSCRIBE_URL unset",
+      emailCopyBlockers(mergeVars(props)),
+    );
+    status = "skipped";
   } else {
     try {
-      const element = createElement(WaitlistConfirmation, {
-        position: args.position,
-        shareUrl: args.shareUrl,
-      });
+      const element = createElement(WaitlistConfirmation, props);
       const [html, text] = await Promise.all([
         render(element),
         render(element, { plainText: true }),
@@ -41,7 +59,7 @@ export async function sendWaitlistConfirmation(args: {
         {
           from,
           to: args.to,
-          subject: WAITLIST_CONFIRMATION_SUBJECT,
+          subject: waitlistConfirmationSubject(props),
           html,
           text,
           ...(env.resendReplyTo() ? { replyTo: env.resendReplyTo() } : {}),
