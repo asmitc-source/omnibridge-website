@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "node --experimental-strip-types scripts/reserved-domains-check.mts && node --experimental-strip-types scripts/origin-check.mts"
   },
   "dependencies": {
     "@react-email/components": "^1.0.12",

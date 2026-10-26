@@ -1,4 +1,6 @@
-# OmniBridge waitlist API contract (v0.2, 2026-10-27)
+# OmniBridge waitlist API contract (v0.3, 2026-10-27)
+
+**Changelog (v0.3):** a POST with no `Origin` header is `403 forbidden_origin` when `ALLOWED_ORIGINS` is non-empty (an empty list is unchanged). Referral identity keeps the full local part, including the `+tag`, only for `ob-qa+` addresses on reserved test domains, so distinct preview QA cases can earn credit. Every other address still strips `+tag`.
 
 **Status:** approved by Product Lead with fixes (2026-10-27). Fixes applied: no `total` in any response; email template uses copy deck v1.1 keys; reserved test domains rejected (preview-only allowlist); plus/dot self-referrals earn no credit; QA purge function.
 
@@ -45,7 +47,7 @@ Errors all share one shape: `{ "ok": false, "error": { "code": "...", "message":
 |---|---|---|
 | 400 | `invalid_email` | Email is missing, not valid syntax, or on a reserved test domain (unless allowlisted on preview, see below). |
 | 400 | `disposable_email` | Email is on a disposable domain. |
-| 403 | `forbidden_origin` | `ALLOWED_ORIGINS` is set and the Origin is not on it. |
+| 403 | `forbidden_origin` | `ALLOWED_ORIGINS` is set and the `Origin` header is missing or not on the list. When `ALLOWED_ORIGINS` is empty, the header is not checked. |
 | 422 | `validation_error` | Bad JSON, a bad `type`, a field too long or a tripped honeypot. `fields` maps each field to its messages. A tripped honeypot returns a generic message with no `fields`. |
 | 429 | `rate_limited` | More than 5 POSTs per 10 min per hashed IP. Also sends a `Retry-After` header. |
 | 500 | `server_error` | Anything else. Safe to retry: a retry hits the duplicate path and creates no extra row. |
@@ -75,11 +77,15 @@ Decided by Asmit, 2026-10-26: the referral bump is ON at launch, and each verifi
 
 **Self-referral via plus/dot variants (site plan §e):** the server derives a *referral identity key* from the normalised email: the local part with any `+tag` removed (all domains), and for `gmail.com` / `googlemail.com` also with dots removed and the domain mapped to `gmail.com`. If the referred signup and the referrer share this key, the referral earns no credit. The signup still succeeds and gets its own position, and dedupe stays on the exact normalised email (so `me+1@acme.com` and `me@acme.com` are two rows). The key is computed in SQL (`waitlist_referral_identity_key`) when positions are calculated. Nothing extra is stored.
 
+**QA exception (v0.3):** that `+tag` strip is skipped only when the local part starts with `ob-qa+` and the domain is a reserved test domain (the same set rejected outside preview/dev: `example.com` / `.org` / `.net` and their subdomains, and names under `.test`, `.invalid`, `.example`, or `.localhost`). The full local part is kept, so `ob-qa+a@example.com` and `ob-qa+b@example.com` are different identities and a referral between them counts. `ob-qa+` on any other domain, including Gmail, still strips the tag.
+
 | Referrer | New signup with referrer's code | Credit |
 |---|---|---|
 | `me@acme.com` | `me+1@acme.com` | 0 |
 | `samsmith@gmail.com` | `s.a.m.smith+x@googlemail.com` | 0 |
 | `m.e@acme.com` | `me@acme.com` | 1 (dots only collapse on Gmail) |
+| `ob-qa+a@example.com` | `ob-qa+b@example.com` | 1 (QA tag kept on a reserved domain) |
+| `alice+x@gmail.com` | `alice+y@gmail.com` | 0 |
 
 **Tie-break (Product Lead, verbatim):** when two people land on the same position after a bump, the earlier signup time ranks higher, then the lower row ID.
 

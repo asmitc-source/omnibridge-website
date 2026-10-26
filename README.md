@@ -34,7 +34,7 @@ Copy `.env.example` to `.env.local`. Every variable is server-only. None use the
 | `SUPABASE_SERVICE_ROLE_KEY` | yes | Service-role key. Bypasses RLS. Never expose it to the browser. |
 | `IP_HASH_SALT` | yes | HMAC salt for client IPs. Generate with `openssl rand -hex 32`. Raw IPs are not stored. |
 | `SITE_URL` | no | Public origin for referral links, no trailing slash. Defaults to `http://localhost:3000`. |
-| `ALLOWED_ORIGINS` | no | Comma-separated `Origin` allow-list for `POST /api/waitlist`. Empty means the check is off. |
+| `ALLOWED_ORIGINS` | no | Comma-separated `Origin` allow-list for `POST /api/waitlist`. Empty means the check is off. When set, a missing `Origin` is rejected. |
 | `WAITLIST_EMAIL_ENABLED` | no | Set to `true` to send confirmation email. Default off. Signups work without it. |
 | `RESEND_API_KEY` | only if email is on | Resend API key. |
 | `RESEND_FROM` | only if email is on | Sender, for example `OmniBridge <waitlist@your-domain>`. |

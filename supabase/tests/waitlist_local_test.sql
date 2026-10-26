@@ -203,6 +203,33 @@ do $$ begin
   raise notice 'PASS waitlist_clear_rate_limits cleared rows, signups untouched';
 end $$;
 
+\echo '--- 12. QA reserved-domain +tag is its own identity; Gmail plus-tags still are not ---'
+do $$ begin
+  assert public.waitlist_referral_identity_key('ob-qa+a@example.com') = 'ob-qa+a@example.com', 'qa example.com keeps tag';
+  assert public.waitlist_referral_identity_key('ob-qa+b@example.com') = 'ob-qa+b@example.com', 'qa example.com keeps tag b';
+  assert public.waitlist_referral_identity_key('alice+x@gmail.com') = 'alice@gmail.com', 'gmail plus still stripped';
+  assert public.waitlist_referral_identity_key('alice+y@gmail.com') = 'alice@gmail.com', 'gmail plus y stripped';
+  assert public.waitlist_referral_identity_key('ob-qa+a@gmail.com') = 'ob-qa@gmail.com', 'qa on gmail still strips';
+  assert public.waitlist_referral_identity_key('me+1@example.com') = 'me@example.com', 'non-qa reserved domain still strips';
+  raise notice 'PASS qa identity key keeps +tag only for ob-qa+ on reserved domains';
+end $$;
+select 'QA-a' as who, already_registered from public.waitlist_signup('ob-qa+a@example.com','buyer',null,null,null,null, repeat('71',32));
+select 'QA-b' as who, already_registered from public.waitlist_signup('ob-qa+b@example.com','buyer',null,null,null,
+  (select referral_code from public.waitlist_signups where email='ob-qa+a@example.com'), repeat('72',32));
+select 'G+x' as who, already_registered from public.waitlist_signup('alice+x@gmail.com','buyer',null,null,null,null, repeat('73',32));
+select 'G+y' as who, already_registered from public.waitlist_signup('alice+y@gmail.com','buyer',null,null,null,
+  (select referral_code from public.waitlist_signups where email='alice+x@gmail.com'), repeat('74',32));
+do $$ declare n int; begin
+  select p.referral_count into n from public.waitlist_positions p
+    join public.waitlist_signups w using (id) where w.email='ob-qa+a@example.com';
+  assert n = 1, 'qa referral should be credited, got ' || n;
+  raise notice 'PASS ob-qa+a@example.com / ob-qa+b@example.com earns 1 credit';
+  select p.referral_count into n from public.waitlist_positions p
+    join public.waitlist_signups w using (id) where w.email='alice+x@gmail.com';
+  assert n = 0, 'gmail plus self-referral credited: ' || n;
+  raise notice 'PASS alice+x@gmail.com / alice+y@gmail.com earns 0 (same identity)';
+end $$;
+
 \echo '--- 9. anon / authenticated cannot read emails or call RPCs ---'
 reset role;
 set role anon;
@@ -219,6 +246,8 @@ do $$ begin
   exception when insufficient_privilege then raise notice 'PASS anon execute waitlist_purge_qa_rows denied'; end;
   begin perform public.waitlist_clear_rate_limits(); raise exception 'anon could call clear rate limits';
   exception when insufficient_privilege then raise notice 'PASS anon execute waitlist_clear_rate_limits denied'; end;
+  begin perform public.waitlist_referral_identity_key('a@b.co'); raise exception 'anon could call identity key';
+  exception when insufficient_privilege then raise notice 'PASS anon execute waitlist_referral_identity_key denied'; end;
 end $$;
 reset role;
 set role authenticated;
@@ -229,6 +258,8 @@ do $$ begin
   exception when insufficient_privilege then raise notice 'PASS authenticated execute waitlist_purge_qa_rows denied'; end;
   begin perform public.waitlist_clear_rate_limits(); raise exception 'authenticated could call clear rate limits';
   exception when insufficient_privilege then raise notice 'PASS authenticated execute waitlist_clear_rate_limits denied'; end;
+  begin perform public.waitlist_referral_identity_key('a@b.co'); raise exception 'authenticated could call identity key';
+  exception when insufficient_privilege then raise notice 'PASS authenticated execute waitlist_referral_identity_key denied'; end;
 end $$;
 reset role;
 \echo '--- DONE ---'

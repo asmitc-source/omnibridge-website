@@ -9,6 +9,7 @@ import { hitRateLimit } from "@/lib/rateLimit";
 import { isHoneypotTripped } from "@/lib/honeypot";
 import { waitlistBodySchema } from "@/lib/validation";
 import { jsonError, jsonOk } from "@/lib/http";
+import { originBlock } from "@/lib/origin";
 import { sendWaitlistConfirmation } from "@/lib/confirmationEmail";
 
 export const runtime = "nodejs";
@@ -27,10 +28,10 @@ type SignupRow = {
 export async function POST(req: NextRequest) {
   try {
     // 0. Optional Origin allow-list (CSRF / cross-site form abuse).
-    const allowed = env.allowedOrigins();
-    const origin = req.headers.get("origin");
-    if (allowed.length > 0 && origin && !allowed.includes(origin)) {
-      return jsonError(403, "forbidden_origin", "Origin not allowed.");
+    // When the list is non-empty, a missing Origin is rejected the same way as a foreign one.
+    const originError = originBlock(req.headers.get("origin"), env.allowedOrigins());
+    if (originError) {
+      return jsonError(403, originError, "Origin not allowed.");
     }
 
     // 1. Parse JSON (bounded size).
