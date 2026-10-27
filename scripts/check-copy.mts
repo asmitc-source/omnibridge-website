@@ -13,6 +13,7 @@ import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 import { BRAND, SIGNED_RECORD_TERM } from "../config/site.ts";
 import { isFlagOn } from "../config/flags.ts";
+import { collectRenderedKeys } from "./rendered-keys.mts";
 
 const ROOT = process.cwd();
 const DICTIONARY = join(ROOT, "lib/copy/site.copy.json");
@@ -198,9 +199,10 @@ check("rendered keys do not contain note or internal", () => {
   assert.deepEqual(bad, []);
 });
 
-check("flagged-hidden keys stay unrendered while the flag is off", () => {
+check("flagged-hidden keys stay out of the dictionary and the page while the flag is off", () => {
+  assert.ok(dictionary, "dictionary missing");
   const shown = Object.entries(flags)
-    .filter(([key, flag]) => !isFlagOn(flag) && renders.has(key))
+    .filter(([key, flag]) => !isFlagOn(flag) && (renders.has(key) || key in dictionary!))
     .map(([key, flag]) => `${key} (${flag})`)
     .sort();
   assert.deepEqual(shown, []);
@@ -223,24 +225,43 @@ check("wordmarks interpolate to the brand name", () => {
   assert.ok(BRAND.name.length <= 12);
 });
 
-check("demo script matches deck keys and the signed-record term", () => {
+check("dictionary contains only rendered strings", () => {
+  assert.ok(dictionary, "dictionary missing");
+  const universe = new Set(Object.keys(dictionary!));
+  const rendered = collectRenderedKeys(ROOT, universe);
+  const extra = [...universe].filter((key) => !rendered.has(key)).sort();
+  assert.deepEqual(extra, []);
+});
+
+check("demo script keeps timing only and every step key is rendered", () => {
   const script = JSON.parse(readFileSync(join(ROOT, "lib/copy/demo.script.json"), "utf8")) as {
     signed_record_term: string;
-    steps: { id: string; text: string; speaker: string }[];
-    cast: { id: string; label: string; company: string | null; role: string }[];
+    trust_excerpt_start: string;
+    steps: { id: string; text?: string }[];
+    cast?: unknown;
+    labels?: unknown;
+    alert?: unknown;
+    outcomes?: unknown;
+    price_unit?: unknown;
   };
   assert.equal(script.signed_record_term, SIGNED_RECORD_TERM);
   assert.equal(script.steps.length, 18);
+  assert.equal(script.cast, undefined);
+  assert.equal(script.labels, undefined);
+  assert.equal(script.alert, undefined);
+  assert.equal(script.outcomes, undefined);
+  assert.equal(script.price_unit, undefined);
   assert.ok(dictionary, "dictionary missing");
+  const quoted = collectRenderedKeys(ROOT, new Set(Object.keys(dictionary!)));
   for (const step of script.steps) {
-    assert.equal(dictionary![`demo.step.${step.id}.text`], step.text, step.id);
+    assert.equal(step.text, undefined, step.id);
+    const key = `demo.step.${step.id}.text`;
+    assert.equal(typeof dictionary![key], "string", key);
+    assert.ok(quoted.has(key), `${key} is not rendered`);
   }
-  for (const member of script.cast) {
-    assert.equal(dictionary![`demo.cast.${member.id}.label`], member.label, member.id);
-    assert.equal(dictionary![`demo.cast.${member.id}.role`], member.role, member.id);
-    if (member.company) {
-      assert.equal(dictionary![`demo.cast.${member.id}.company`], member.company, member.id);
-    }
+  for (const id of ["system", "buyer", "supplier_a", "supplier_b", "supplier_c", "approver"]) {
+    assert.ok(quoted.has(`demo.cast.${id}.label`), `${id} label`);
+    assert.ok(quoted.has(`demo.cast.${id}.role`), `${id} role`);
   }
 });
 

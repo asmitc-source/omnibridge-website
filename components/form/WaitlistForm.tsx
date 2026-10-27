@@ -245,7 +245,10 @@ export function WaitlistForm({
             <path d="M10 6v5" stroke="var(--color-amber)" strokeWidth="1.5" />
             <circle cx="10" cy="14" r="1" fill="var(--color-amber)" />
           </svg>
-          <span>{banner}</span>
+          <span>
+            <span className="sr-only">{copy("form.error.summary_aria")} </span>
+            {banner}
+          </span>
         </div>
       ) : null}
       <div className="form-grid">

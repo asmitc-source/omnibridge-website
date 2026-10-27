@@ -9,7 +9,7 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test": "node --experimental-strip-types scripts/reserved-domains-check.mts && node --experimental-strip-types scripts/origin-check.mts && node --experimental-strip-types scripts/rate-limit-check.mts && node --experimental-strip-types --import ./scripts/register-ts-ext.mjs scripts/brand-copy-check.mts && node --experimental-strip-types --import ./scripts/register-ts-ext.mjs scripts/interpolate-check.mts",
-    "build:copy": "node --experimental-strip-types scripts/build-copy.mts",
+    "build:copy": "node --experimental-strip-types --import ./scripts/register-ts-ext.mjs scripts/build-copy.mts",
     "check:copy": "node --experimental-strip-types --import ./scripts/register-ts-ext.mjs scripts/check-copy.mts",
     "check:red": "node --experimental-strip-types scripts/check-red.mts",
     "check:tokens": "node --experimental-strip-types scripts/build-tokens.mts --check"

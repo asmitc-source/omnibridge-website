@@ -13,7 +13,6 @@ type Step = {
   t_ms: number;
   speaker: string;
   type: string;
-  text: string;
   price: number | null;
   ui_event: string | null;
 };

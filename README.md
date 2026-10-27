@@ -25,15 +25,15 @@ Open [http://localhost:3000](http://localhost:3000). Fill in `.env.local` before
 | `npm run check:red` | Alert-colour gate. Those styles may appear only in `RedAlertModal`, `KillSwitchButton`, and `PausePulse`, plus `tokens.json` and `app/tokens.generated.css` |
 | `npm run check:copy` | Rendered-copy gate. Fails on a missing key, a `note` or `internal` key, a flagged-hidden key while its flag is off, or the brand name outside `config/site.ts` and the changelog |
 | `npm run check:tokens` | Confirms the generated theme CSS and `motion/tokens.ts` match `tokens.json` |
-| `npm run build:copy` | Rewrites `lib/copy/site.copy.json` from the approved deck. It does not invent keys |
+| `npm run build:copy` | Rewrites `lib/copy/site.copy.json` from the approved deck, keeping only keys the site renders |
 
 `check:copy`, `check:red`, and `check:tokens` run in CI with lint, typecheck, test, and build.
 
 ## Copy and the brand name
 
-User-facing sentences live in `lib/copy/site.copy.json`. Components call `copy("key")`. `{brand}` is filled at render from `BRAND.name` in `config/site.ts`, including metadata, Open Graph text, JSON-LD, the wordmark, and aria labels. A rename is that one line. `SHOW_WAITLIST_TOTAL` is `false`, so the waitlist total and the excluded-referral rule are not rendered.
+User-facing sentences live in `lib/copy/site.copy.json`. That file holds only keys the pages render. Components call `copy("key")`. `{brand}` is filled at render from `BRAND.name` in `config/site.ts`, including metadata, Open Graph text, JSON-LD, the wordmark, and aria labels. A rename is that one line. `SHOW_WAITLIST_TOTAL` is `false`, so the waitlist total and the excluded-referral rule are not rendered and their strings are not in the dictionary.
 
-The success state shares with plain intent URLs only: `https://x.com/intent/post`, `https://www.linkedin.com/sharing/share-offsite/`, a `mailto:` link whose subject and body come from the deck, and Copy link. There is no share SDK.
+The success state shares with plain intent URLs only: `https://x.com/intent/post`, `https://www.linkedin.com/sharing/share-offsite/`, a `mailto:` link whose subject and body come from the referral copy keys, and Copy link. There is no share SDK. Colour tokens come from `tokens.json` (approved 1.2.0). `npm run check:tokens` confirms the generated theme.
 
 ## Structure
 
