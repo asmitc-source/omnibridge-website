@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { PRODUCT_NAME } from "@/lib/brand";
+import { BRAND } from "@/config/site";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: PRODUCT_NAME,
-  description: `${PRODUCT_NAME} — waitlist coming soon`,
+  title: BRAND.name,
+  description: `${BRAND.name} — waitlist coming soon`,
 };
 
 export default function RootLayout({

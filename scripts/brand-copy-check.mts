@@ -3,7 +3,7 @@
 import assert from "node:assert/strict";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
-import { PRODUCT_NAME } from "../lib/brand.ts";
+import { BRAND } from "../config/site.ts";
 import {
   EMAIL_CONFIRM_COPY,
   emailCopy,
@@ -76,17 +76,17 @@ function sourceFiles(dir: string): string[] {
   return out;
 }
 
-check("no runtime string in lib/copy, emails/, or app/ contains OmniBridge", () => {
-  const roots = ["lib/copy", "emails", "app"];
+check("no runtime string contains OmniBridge outside config/site.ts", () => {
+  const roots = ["lib", "emails", "app", "config"];
   const hits: string[] = [];
   for (const root of roots) {
     for (const file of sourceFiles(root)) {
-      if (file.endsWith("lib/brand.ts")) continue;
       const code = stripComments(readFileSync(file, "utf8"));
       if (code.includes("OmniBridge")) hits.push(file);
     }
   }
-  assert.deepEqual(hits, []);
+  hits.sort();
+  assert.deepEqual(hits, ["config/site.ts"]);
 });
 
 check("current copy blockers include footer.entity", () => {
@@ -104,8 +104,13 @@ check("a fully filled footer leaves no blockers", () => {
 });
 
 check("sign-off renders The OmniBridge team and footer stays the placeholder line", () => {
-  assert.equal(emailCopy("email.confirm.signoff", VARS), `The ${PRODUCT_NAME} team`);
-  assert.equal(emailCopy("email.confirm.subject", VARS), `You're #42 on the ${PRODUCT_NAME} waitlist`);
+  assert.equal(emailCopy("email.confirm.signoff", VARS), `The ${BRAND.name} team`);
+  assert.equal(emailCopy("email.confirm.subject", VARS), `You're #42 on the ${BRAND.name} waitlist`);
+  assert.equal(emailCopy("email.confirm.p1", VARS), `You're on the ${BRAND.name} waitlist. Your spot is #42.`);
+  assert.equal(
+    emailCopy("email.confirm.footer.reason", VARS),
+    `You're getting this because you joined the ${BRAND.name} waitlist at https://example.com.`,
+  );
   assert.equal(
     emailCopy("email.confirm.footer.entity", VARS),
     "[LEGAL ENTITY] · [REGISTERED ADDRESS] · hello@[domain]",
