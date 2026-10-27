@@ -1,0 +1,168 @@
+{
+  "signed_record_term": "tamper-evident",
+  "trust_excerpt_start": "s11",
+  "steps": [
+    {
+      "id": "s01",
+      "branch": "main",
+      "t_ms": 0,
+      "speaker": "system",
+      "type": "system",
+      "price": null,
+      "ui_event": "policy_panel.show"
+    },
+    {
+      "id": "s02",
+      "branch": "main",
+      "t_ms": 1200,
+      "speaker": "buyer",
+      "type": "bubble",
+      "price": null,
+      "ui_event": "rfq.broadcast"
+    },
+    {
+      "id": "s03",
+      "branch": "main",
+      "t_ms": 2600,
+      "speaker": "system",
+      "type": "system",
+      "price": null,
+      "ui_event": "suppliers.join"
+    },
+    {
+      "id": "s04",
+      "branch": "main",
+      "t_ms": 4000,
+      "speaker": "supplier_a",
+      "type": "bubble",
+      "price": 768,
+      "ui_event": "ticker.set"
+    },
+    {
+      "id": "s05",
+      "branch": "main",
+      "t_ms": 5200,
+      "speaker": "supplier_b",
+      "type": "bubble",
+      "price": 768,
+      "ui_event": "ticker.hold"
+    },
+    {
+      "id": "s06",
+      "branch": "main",
+      "t_ms": 6400,
+      "speaker": "supplier_c",
+      "type": "bubble",
+      "price": 759,
+      "ui_event": "ticker.set"
+    },
+    {
+      "id": "s07",
+      "branch": "main",
+      "t_ms": 8000,
+      "speaker": "buyer",
+      "type": "bubble",
+      "price": 759,
+      "ui_event": "ticker.hold"
+    },
+    {
+      "id": "s08",
+      "branch": "main",
+      "t_ms": 9600,
+      "speaker": "supplier_c",
+      "type": "price_tick",
+      "price": 748,
+      "ui_event": "ticker.set"
+    },
+    {
+      "id": "s09",
+      "branch": "main",
+      "t_ms": 11000,
+      "speaker": "buyer",
+      "type": "bubble",
+      "price": 748,
+      "ui_event": "ticker.hold"
+    },
+    {
+      "id": "s10",
+      "branch": "main",
+      "t_ms": 12600,
+      "speaker": "supplier_c",
+      "type": "price_tick",
+      "price": 728,
+      "ui_event": "ticker.set"
+    },
+    {
+      "id": "s11",
+      "branch": "main",
+      "t_ms": 14000,
+      "speaker": "system",
+      "type": "system",
+      "price": 728,
+      "ui_event": "policy_panel.flag_prepay"
+    },
+    {
+      "id": "s12",
+      "branch": "main",
+      "t_ms": 15000,
+      "speaker": "system",
+      "type": "alert",
+      "price": 728,
+      "ui_event": "alert.open"
+    },
+    {
+      "id": "s13a",
+      "branch": "approve",
+      "t_ms": 0,
+      "speaker": "approver",
+      "type": "action",
+      "price": 728,
+      "ui_event": "alert.close_approve"
+    },
+    {
+      "id": "s14a",
+      "branch": "approve",
+      "t_ms": 1200,
+      "speaker": "system",
+      "type": "system",
+      "price": 728,
+      "ui_event": "deal.sign"
+    },
+    {
+      "id": "s15a",
+      "branch": "approve",
+      "t_ms": 2400,
+      "speaker": "system",
+      "type": "system",
+      "price": 728,
+      "ui_event": "record.write"
+    },
+    {
+      "id": "s13b",
+      "branch": "reject",
+      "t_ms": 0,
+      "speaker": "approver",
+      "type": "action",
+      "price": 748,
+      "ui_event": "alert.close_reject"
+    },
+    {
+      "id": "s14b",
+      "branch": "reject",
+      "t_ms": 1200,
+      "speaker": "buyer",
+      "type": "bubble",
+      "price": 748,
+      "ui_event": "ticker.revert"
+    },
+    {
+      "id": "s15b",
+      "branch": "reject",
+      "t_ms": 2400,
+      "speaker": "system",
+      "type": "system",
+      "price": 748,
+      "ui_event": "record.write"
+    }
+  ]
+}
