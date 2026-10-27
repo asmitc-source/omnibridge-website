@@ -37,7 +37,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteOrigin()),
 };
 
-const parallaxBoot = `(function(){function arm(){var root=document.documentElement;var reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;function tick(){root.style.setProperty("--scroll-y",window.scrollY+"px")}tick();addEventListener("scroll",tick,{passive:true});root.dataset.parallax="on";if(!reduce)root.dataset.motion="on"}if(document.readyState==="complete"){(window.requestIdleCallback||function(cb){setTimeout(cb,1)})(arm)}else{addEventListener("load",function(){(window.requestIdleCallback||function(cb){setTimeout(cb,1)})(arm)})}})();`;
+const parallaxBoot = `(function(){try{if(!localStorage.getItem("ob_cookie"))document.documentElement.dataset.cookie="open"}catch(e){}function arm(){var root=document.documentElement;var reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;function tick(){root.style.setProperty("--scroll-y",window.scrollY+"px")}tick();addEventListener("scroll",tick,{passive:true});root.dataset.parallax="on";if(!reduce)root.dataset.motion="on"}if(document.readyState==="complete"){(window.requestIdleCallback||function(cb){setTimeout(cb,1)})(arm)}else{addEventListener("load",function(){(window.requestIdleCallback||function(cb){setTimeout(cb,1)})(arm)})}})();`;
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (

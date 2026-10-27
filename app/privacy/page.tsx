@@ -15,6 +15,7 @@ export default function PrivacyPage() {
           <T k="privacy.updated" />
         </p>
         <LegalBlocks
+          tocLabel="privacy.h1"
           blocks={[
             { tag: "p", key: "privacy.intro" },
             { tag: "h2", key: "privacy.s1.h" },

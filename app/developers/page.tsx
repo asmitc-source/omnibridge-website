@@ -1,11 +1,9 @@
 import { copy } from "@/lib/copy";
 import { pageMetadata } from "@/lib/seo";
-import { BulletList, CtaBand, PageIntro } from "@/components/content/Content";
+import { BulletList, PageIntro } from "@/components/content/Content";
 import { T } from "@/components/ui/Copy";
 import { ButtonLink } from "@/components/ui/Button";
 import { TextMarks } from "@/components/ui/Marks";
-import { ConnectPoster, PosterFrame } from "@/components/scenes/Posters";
-
 export const metadata = pageMetadata("developers");
 
 export default function DevelopersPage() {
@@ -16,9 +14,26 @@ export default function DevelopersPage() {
           <PageIntro eyebrow="developers.eyebrow" title="developers.h1" sub="developers.sub" note="developers.status" />
           <ButtonLink href="/waitlist?type=developer">{copy("developers.cta.hero")}</ButtonLink>
           <figure className="diagram" style={{ marginTop: 28 }}>
-            <PosterFrame label={copy("developers.alt.diagram")}>
-              <ConnectPoster />
-            </PosterFrame>
+            <svg className="schematic" viewBox="0 0 640 320" role="img" aria-label={copy("developers.alt.diagram")}>
+              <rect x="24" y="116" width="120" height="72" rx="16" fill="none" stroke="var(--color-line-strong)" />
+              <circle cx="84" cy="152" r="8" fill="var(--color-cyan)" />
+              <path d="M144 152 H210" stroke="var(--color-violet)" strokeWidth="1.5" />
+              <rect x="210" y="36" width="200" height="48" rx="12" fill="none" stroke="var(--color-line-strong)" />
+              <rect x="210" y="128" width="200" height="48" rx="12" fill="none" stroke="var(--color-line-strong)" />
+              <rect x="210" y="220" width="200" height="48" rx="12" fill="none" stroke="var(--color-line-strong)" />
+              <path d="M410 60 H470 V152 H410" fill="none" stroke="var(--color-violet)" strokeWidth="1.5" />
+              <path d="M410 244 H470 V152" fill="none" stroke="var(--color-violet)" strokeWidth="1.5" />
+              <rect x="470" y="116" width="140" height="72" rx="16" fill="none" stroke="var(--color-cyan)" />
+              <text x="310" y="66" textAnchor="middle" fill="var(--color-text-1)" fontSize="16" fontFamily="var(--font-mono)">
+                {copy("developers.protocols.mcp.name")}
+              </text>
+              <text x="310" y="158" textAnchor="middle" fill="var(--color-text-1)" fontSize="16" fontFamily="var(--font-mono)">
+                {copy("developers.protocols.a2a.name")}
+              </text>
+              <text x="310" y="250" textAnchor="middle" fill="var(--color-text-1)" fontSize="16" fontFamily="var(--font-mono)">
+                {copy("developers.protocols.api.name")}
+              </text>
+            </svg>
           </figure>
         </div>
       </section>
@@ -51,9 +66,11 @@ export default function DevelopersPage() {
           <p className="muted">{copy("developers.marks.disclaimer")}</p>
           <h2 className="type-h2">{copy("developers.early.h2")}</h2>
           <p>{copy("developers.early.body")}</p>
+          <div className="hero-actions">
+            <ButtonLink href="/waitlist?type=developer">{copy("developers.cta.button")}</ButtonLink>
+          </div>
         </div>
       </section>
-      <CtaBand title="developers.early.h2" primary="developers.cta.button" primaryHref="/waitlist?type=developer" />
     </>
   );
 }

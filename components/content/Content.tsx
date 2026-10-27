@@ -91,13 +91,7 @@ const FAQ_GROUPS: { title: CopyKey; items: { q: CopyKey; a: CopyKey }[] }[] = [
   },
   {
     title: "faq.group.suppliers",
-    items: [
-      { q: "faq.q3.question", a: "faq.q3.answer" },
-      { q: "suppliers.faq.q1.question", a: "suppliers.faq.q1.answer" },
-      { q: "suppliers.faq.q2.question", a: "suppliers.faq.q2.answer" },
-      { q: "suppliers.faq.q3.question", a: "suppliers.faq.q3.answer" },
-      { q: "suppliers.faq.q4.question", a: "suppliers.faq.q4.answer" },
-    ],
+    items: [{ q: "faq.q3.question", a: "faq.q3.answer" }],
   },
   {
     title: "faq.group.developers",
@@ -120,11 +114,22 @@ export function faqEntities() {
   }));
 }
 
+function groupId(title: CopyKey) {
+  return title.replaceAll(".", "-");
+}
+
 export function FaqList() {
   return (
     <div className="faq">
+      <nav className="faq-chips" aria-label={copy("faq.h1")}>
+        {FAQ_GROUPS.map((group) => (
+          <a key={group.title} href={`#${groupId(group.title)}`}>
+            {copy(group.title)}
+          </a>
+        ))}
+      </nav>
       {FAQ_GROUPS.map((group) => (
-        <section key={group.title}>
+        <section key={group.title} id={groupId(group.title)}>
           <h2 className="type-h3">{copy(group.title)}</h2>
           {group.items.map((item) => (
             <details key={item.q}>
@@ -146,7 +151,7 @@ export function JsonLd({ data }: { data: Record<string, unknown> }) {
 
 type Block = { tag: "p" | "h2" | "li"; key: CopyKey };
 
-export function LegalBlocks({ blocks }: { blocks: Block[] }) {
+export function LegalBlocks({ blocks, tocLabel }: { blocks: Block[]; tocLabel: CopyKey }) {
   const nodes: ReactNode[] = [];
   let list: CopyKey[] = [];
   const flush = () => {
@@ -171,7 +176,7 @@ export function LegalBlocks({ blocks }: { blocks: Block[] }) {
     flush();
     if (block.tag === "h2") {
       nodes.push(
-        <h2 key={block.key} className="type-h3">
+        <h2 key={block.key} id={block.key} className="type-h2">
           {copy(block.key)}
         </h2>,
       );
@@ -184,5 +189,20 @@ export function LegalBlocks({ blocks }: { blocks: Block[] }) {
     }
   }
   flush();
-  return <div className="prose measure">{nodes}</div>;
+  const headings = blocks.filter((block) => block.tag === "h2");
+  return (
+    <div className="legal-layout">
+      <details className="legal-toc" open>
+        <summary>{copy(tocLabel)}</summary>
+        <ol>
+          {headings.map((block) => (
+            <li key={block.key}>
+              <a href={`#${block.key}`}>{copy(block.key)}</a>
+            </li>
+          ))}
+        </ol>
+      </details>
+      <div className="prose measure">{nodes}</div>
+    </div>
+  );
 }

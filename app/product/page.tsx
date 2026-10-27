@@ -16,6 +16,7 @@ export default function ProductPage() {
           <div className="card-grid" style={{ marginTop: 32 }} role="list" aria-label={copy("product.alt.orbit")}>
             {MODULES.map((n) => (
               <article key={n} className="panel" role="listitem">
+                <p className="step-index">{String(n).padStart(2, "0")}</p>
                 <p className="eyebrow">{copy(`product.module.${n}.tag` as CopyKey)}</p>
                 <h2 className="type-h3">{copy(`product.module.${n}.name` as CopyKey)}</h2>
                 <p className="muted">
@@ -24,7 +25,7 @@ export default function ProductPage() {
               </article>
             ))}
           </div>
-          <article className="panel" style={{ marginTop: 16 }}>
+          <article className="panel panel-dashed" style={{ marginTop: 16 }}>
             <p className="eyebrow">{copy("product.later.label")}</p>
             <h2 className="type-h3">{copy("product.later.name")}</h2>
             <p className="muted">{copy("product.later.body")}</p>

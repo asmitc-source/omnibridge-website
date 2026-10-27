@@ -102,28 +102,35 @@ export function SiteHeader() {
             className="icon-btn"
             aria-expanded={open}
             aria-controls={menuTitle}
+            aria-label={open ? copy("nav.menu.close") : copy("nav.menu.open")}
             onClick={() => setOpen((value) => !value)}
           >
-            {open ? copy("nav.menu.close") : copy("nav.menu.open")}
+            {open ? (
+              <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+                <path d="M4 4l10 10M14 4L4 14" stroke="currentColor" strokeWidth="1.5" />
+              </svg>
+            ) : (
+              <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+                <path d="M3 5h12M3 9h12M3 13h12" stroke="currentColor" strokeWidth="1.5" />
+              </svg>
+            )}
           </button>
           <ButtonLink className="nav-cta-desktop" href="/waitlist">
             {copy("nav.cta")}
           </ButtonLink>
         </div>
       </div>
-      {open ? (
-        <div className="mobile-menu" id={menuTitle} role="dialog" aria-modal="true" aria-label={copy("nav.menu.open")}>
-          <button type="button" className="btn btn-secondary" onClick={() => setOpen(false)}>
-            {copy("nav.menu.close")}
-          </button>
-          {LINKS.map((link) => (
-            <a key={link.href} className="menu-link" href={link.href}>
-              {copy(link.key)}
-            </a>
-          ))}
-          <ButtonLink href="/waitlist">{copy("nav.cta")}</ButtonLink>
-        </div>
-      ) : null}
+      <div className="mobile-menu" id={menuTitle} role="dialog" aria-modal="true" aria-label={copy("nav.menu.open")} hidden={!open}>
+        <button type="button" className="btn btn-secondary" onClick={() => setOpen(false)}>
+          {copy("nav.menu.close")}
+        </button>
+        {LINKS.map((link) => (
+          <a key={link.href} className="menu-link" href={link.href}>
+            {copy(link.key)}
+          </a>
+        ))}
+        <ButtonLink href="/waitlist">{copy("nav.cta")}</ButtonLink>
+      </div>
     </header>
   );
 }

@@ -29,9 +29,11 @@ function minutes(seconds: number): number {
 export function WaitlistForm({
   heading = "h3",
   preset = "",
+  rulesHeading = false,
 }: {
   heading?: "h2" | "h3";
   preset?: string;
+  rulesHeading?: boolean;
 }) {
   const reduce = useReducedMotion();
   const titleId = useId();
@@ -220,6 +222,7 @@ export function WaitlistForm({
             {copy("referral.share.copy.label")}
           </button>
         </div>
+        {rulesHeading ? <h2 className="type-h2">{copy("waitlist.rules.h2")}</h2> : null}
         <ul>
           <li>{copy("referral.rule.bump")}</li>
           <li>{copy("referral.rule.verified")}</li>
@@ -303,7 +306,7 @@ export function WaitlistForm({
       </div>
       <fieldset className={`field${errors.type ? " has-error" : ""}`}>
         <legend>{copy("form.type.legend")}</legend>
-        <div className="radios">
+        <div className="type-chips">
           {(Object.keys(TYPE_KEYS) as Exclude<TypeValue, "">[]).map((value) => (
             <label key={value}>
               <input
@@ -317,7 +320,7 @@ export function WaitlistForm({
             </label>
           ))}
         </div>
-        <button type="button" className="btn btn-text" onClick={() => setType("")}>
+        <button type="button" className="text-link" onClick={() => setType("")}>
           {copy("form.type.clear")}
         </button>
         <p id="type-hint" className="hint muted">

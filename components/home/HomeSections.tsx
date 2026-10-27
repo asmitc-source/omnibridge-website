@@ -4,7 +4,6 @@ import { ButtonLink } from "@/components/ui/Button";
 import { TextMarks } from "@/components/ui/Marks";
 import { NetworkPoster, PosterFrame, WallsPoster } from "@/components/scenes/Posters";
 import { DemoSimulation } from "@/components/demo/DemoSimulation";
-import { FaqList } from "@/components/content/Content";
 import { WaitlistForm } from "@/components/form/WaitlistForm";
 
 const HERO_NODES = ["home.hero.node.buyer", "home.hero.node.supplier", "home.hero.node.human"] as const;
@@ -18,7 +17,7 @@ export function HomeSections() {
     .filter(Boolean);
   return (
     <>
-      <section id="hero" className="hero section">
+      <section id="hero" className="hero">
         <PosterFrame hero label={copy("home.alt.hero_poster")}>
           <NetworkPoster id="hero" />
         </PosterFrame>
@@ -27,7 +26,7 @@ export function HomeSections() {
           <p className="eyebrow">{copy("home.hero.eyebrow")}</p>
           <h1 className="type-display-xl h1-reserve">
             {beats.map((beat) => (
-              <span key={beat} style={{ display: "block" }}>
+              <span key={beat}>
                 {beat}
               </span>
             ))}
@@ -41,14 +40,14 @@ export function HomeSections() {
               {copy("home.hero.secondary")}
             </ButtonLink>
           </div>
-          <p className="solid-meta">{copy("home.hero.micro")}</p>
           <p className="muted">{copy("home.hero.byo")}</p>
-          <p>
+          <p className="solid-meta">{copy("home.hero.micro")}</p>
+          <p className="sr-only">
             <a className="ghost-link" href="#problem">
               {copy("home.hero.scroll")}
             </a>
           </p>
-          <ul className="hero-nodes">
+          <ul className="hero-nodes sr-only">
             {HERO_NODES.map((key) => (
               <li key={key}>{copy(key)}</li>
             ))}
@@ -124,9 +123,11 @@ export function HomeSections() {
 
       <section id="demo" className="section">
         <div className="container">
-          <p className="eyebrow">{copy("home.demo.eyebrow")}</p>
-          <h2 className="type-h2">{copy("home.demo.h2")}</h2>
-          <p className="measure">{copy("home.demo.body")}</p>
+          <div className="demo-intro">
+            <p className="eyebrow">{copy("home.demo.eyebrow")}</p>
+            <h2 className="type-h2">{copy("home.demo.h2")}</h2>
+            <p className="measure">{copy("home.demo.body")}</p>
+          </div>
           <DemoSimulation />
           <p>
             <ButtonLink href="/procurement" variant="text" arrow={false}>
@@ -237,7 +238,32 @@ export function HomeSections() {
         <div className="container">
           <p className="eyebrow">{copy("home.faq.eyebrow")}</p>
           <h2 className="type-h2">{copy("home.faq.h2")}</h2>
-          <FaqList />
+          <div className="faq">
+            <details>
+              <summary>{copy("faq.q1.question")}</summary>
+              <p className="muted"><T k="faq.q1.answer" /></p>
+            </details>
+            <details>
+              <summary>{copy("faq.q2.question")}</summary>
+              <p className="muted"><T k="faq.q2.answer" /></p>
+            </details>
+            <details>
+              <summary>{copy("faq.q3.question")}</summary>
+              <p className="muted"><T k="faq.q3.answer" /></p>
+            </details>
+            <details>
+              <summary>{copy("faq.q4.question")}</summary>
+              <p className="muted"><T k="faq.q4.answer" /></p>
+            </details>
+            <details>
+              <summary>{copy("faq.q5.question")}</summary>
+              <p className="muted"><T k="faq.q5.answer" /></p>
+            </details>
+            <details>
+              <summary>{copy("faq.q6.question")}</summary>
+              <p className="muted"><T k="faq.q6.answer" /></p>
+            </details>
+          </div>
           <p>
             <ButtonLink href="/faq" variant="secondary" arrow={false}>
               {copy("home.faq.link")}

@@ -28,49 +28,74 @@ export default function ProcurementPage() {
           <h2 className="type-h2">
             <T k="procurement.compare.h2" />
           </h2>
-          <div className="table-wrap" role="region" aria-label={copy("procurement.alt.compare")}>
-            <table>
-              <thead>
-                <tr>
-                  <th>{copy("procurement.compare.col.task")}</th>
-                  <th>{copy("procurement.compare.col.today")}</th>
-                  <th>{copy("procurement.compare.col.with")}</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>{copy("procurement.compare.1.task")}</td>
-                  <td>{copy("procurement.compare.1.today")}</td>
-                  <td>{copy("procurement.compare.1.with")}</td>
-                </tr>
-                <tr>
-                  <td>{copy("procurement.compare.2.task")}</td>
-                  <td>{copy("procurement.compare.2.today")}</td>
-                  <td>{copy("procurement.compare.2.with")}</td>
-                </tr>
-                <tr>
-                  <td>{copy("procurement.compare.3.task")}</td>
-                  <td>{copy("procurement.compare.3.today")}</td>
-                  <td>{copy("procurement.compare.3.with")}</td>
-                </tr>
-                <tr>
-                  <td>{copy("procurement.compare.4.task")}</td>
-                  <td>{copy("procurement.compare.4.today")}</td>
-                  <td>{copy("procurement.compare.4.with")}</td>
-                </tr>
-                <tr>
-                  <td>{copy("procurement.compare.5.task")}</td>
-                  <td>{copy("procurement.compare.5.today")}</td>
-                  <td>{copy("procurement.compare.5.with")}</td>
-                </tr>
-              </tbody>
-            </table>
+          <div className="compare">
+            <div className="compare-toggle">
+              <input type="radio" name="compare-view" id="compare-today" defaultChecked />
+              <label htmlFor="compare-today">{copy("procurement.compare.col.today")}</label>
+              <input type="radio" name="compare-view" id="compare-with" />
+              <label htmlFor="compare-with">{copy("procurement.compare.col.with")}</label>
+            </div>
+            <div className="table-wrap" role="region" aria-label={copy("procurement.alt.compare")}>
+              <table>
+                <thead>
+                  <tr>
+                    <th>{copy("procurement.compare.col.task")}</th>
+                    <th className="compare-today">{copy("procurement.compare.col.today")}</th>
+                    <th className="compare-with">{copy("procurement.compare.col.with")}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>{copy("procurement.compare.1.task")}</td>
+                    <td className="compare-today">{copy("procurement.compare.1.today")}</td>
+                    <td className="compare-with">
+                      <span className="compare-dot" aria-hidden="true" />
+                      {copy("procurement.compare.1.with")}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>{copy("procurement.compare.2.task")}</td>
+                    <td className="compare-today">{copy("procurement.compare.2.today")}</td>
+                    <td className="compare-with">
+                      <span className="compare-dot" aria-hidden="true" />
+                      {copy("procurement.compare.2.with")}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>{copy("procurement.compare.3.task")}</td>
+                    <td className="compare-today">{copy("procurement.compare.3.today")}</td>
+                    <td className="compare-with">
+                      <span className="compare-dot" aria-hidden="true" />
+                      {copy("procurement.compare.3.with")}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>{copy("procurement.compare.4.task")}</td>
+                    <td className="compare-today">{copy("procurement.compare.4.today")}</td>
+                    <td className="compare-with">
+                      <span className="compare-dot" aria-hidden="true" />
+                      {copy("procurement.compare.4.with")}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>{copy("procurement.compare.5.task")}</td>
+                    <td className="compare-today">{copy("procurement.compare.5.today")}</td>
+                    <td className="compare-with">
+                      <span className="compare-dot" aria-hidden="true" />
+                      {copy("procurement.compare.5.with")}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </section>
       <section id="demo" className="section">
         <div className="container">
-          <h2 className="type-h2">{copy("procurement.demo.h2")}</h2>
+          <div className="demo-intro">
+            <h2 className="type-h2">{copy("procurement.demo.h2")}</h2>
+          </div>
           <DemoSimulation captionKey="procurement.demo.caption" />
           <h2 className="type-h2">{copy("procurement.policy.h2")}</h2>
           <p className="solid-meta">{copy("procurement.policy.label")}</p>

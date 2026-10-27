@@ -1,6 +1,6 @@
 import { copy } from "@/lib/copy";
 import { pageMetadata } from "@/lib/seo";
-import { BulletList, CtaBand, PageIntro } from "@/components/content/Content";
+import { CtaBand, PageIntro } from "@/components/content/Content";
 import { T } from "@/components/ui/Copy";
 import { DemoSimulation } from "@/components/demo/DemoSimulation";
 import { KillSwitchButton } from "@/components/demo/KillSwitchButton";
@@ -27,8 +27,22 @@ export default function TrustPage() {
           <h2 className="type-h2">{copy("trust.identity.h2")}</h2>
           <p>{copy("trust.identity.body")}</p>
           <p className="solid-meta">{copy("trust.identity.disclosure")}</p>
+          <aside className="mock-card" aria-hidden="true">
+            <div className="mock-row">
+              <span className="badge">{copy("demo.cast.buyer.label")}</span>
+              <span className="badge">{copy("demo.label.verified")}</span>
+            </div>
+            <span className="skel" />
+            <span className="skel short" />
+          </aside>
           <h2 className="type-h2">{copy("trust.policy.h2")}</h2>
           <p>{copy("trust.policy.body")}</p>
+          <div className="panel">
+            <h3 className="type-h4">{copy("demo.label.policy_title")}</h3>
+            <p>{copy("demo.label.policy_price")}</p>
+            <p>{copy("demo.label.policy_prepay")}</p>
+            <p>{copy("demo.label.policy_delivery")}</p>
+          </div>
         </div>
       </section>
       <section id="alert" className="section">
@@ -47,8 +61,24 @@ export default function TrustPage() {
           <p>
             <T k="trust.record.body" />
           </p>
+          <aside className="mock-card" aria-hidden="true">
+            <span className="record-tick" />
+            <span className="skel" />
+            <span className="skel short" />
+            <span className="skel" />
+          </aside>
           <h2 className="type-h2">{copy("trust.not.h2")}</h2>
-          <BulletList keys={["trust.not.b1", "trust.not.b2", "trust.not.b3"]} />
+          <ul className="not-list">
+            <li>
+              <T k="trust.not.b1" />
+            </li>
+            <li>
+              <T k="trust.not.b2" />
+            </li>
+            <li>
+              <T k="trust.not.b3" />
+            </li>
+          </ul>
           <p className="muted">{copy("trust.closing")}</p>
         </div>
       </section>

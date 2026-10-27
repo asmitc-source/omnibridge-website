@@ -25,13 +25,7 @@ export default async function WaitlistPage({
         <p>
           <T k="waitlist.privacy" linkPhrases />
         </p>
-        <WaitlistForm heading="h2" preset={params.type} />
-        <h2 className="type-h2">{copy("waitlist.rules.h2")}</h2>
-        <ul>
-          <li>{copy("referral.rule.bump")}</li>
-          <li>{copy("referral.rule.verified")}</li>
-          <li>{copy("referral.rule.tiebreak")}</li>
-        </ul>
+        <WaitlistForm heading="h2" preset={params.type} rulesHeading />
       </div>
     </section>
   );

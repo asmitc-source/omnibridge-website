@@ -11,40 +11,46 @@ export default function ManifestoPage() {
       <section className="section">
         <div className="container measure">
           <PageIntro eyebrow="manifesto.eyebrow" title="manifesto.h1" />
-          <p className="type-body-l">{copy("manifesto.line.1")}</p>
-          <p className="type-body-l">{copy("manifesto.line.2")}</p>
-          <p className="type-body-l">{copy("manifesto.line.3")}</p>
-          <p className="type-body-l">{copy("manifesto.line.4")}</p>
-          <p className="type-body-l">{copy("manifesto.line.5")}</p>
-          <p className="type-body-l">{copy("manifesto.line.6")}</p>
-          <p className="type-body-l">{copy("manifesto.line.7")}</p>
-          <p className="type-body-l">{copy("manifesto.line.8")}</p>
-          <p className="type-body-l">{copy("manifesto.line.9")}</p>
+          <div className="manifesto-lines">
+            <p className="type-display-l manifesto-line">{copy("manifesto.line.1")}</p>
+            <p className="type-display-l manifesto-line">{copy("manifesto.line.2")}</p>
+            <p className="type-display-l manifesto-line">{copy("manifesto.line.3")}</p>
+            <p className="type-display-l manifesto-line">{copy("manifesto.line.4")}</p>
+            <p className="type-display-l manifesto-line">{copy("manifesto.line.5")}</p>
+            <p className="type-display-l manifesto-line">{copy("manifesto.line.6")}</p>
+            <p className="type-display-l manifesto-line">{copy("manifesto.line.7")}</p>
+            <p className="type-display-l manifesto-line">{copy("manifesto.line.8")}</p>
+            <p className="type-display-l manifesto-line">{copy("manifesto.line.9")}</p>
+          </div>
         </div>
       </section>
       <section className="section-compact">
         <div className="container">
           <h2 className="type-h2">{copy("manifesto.principles.h2")}</h2>
-          <div className="card-grid">
+          <div className="principle-grid">
             <article className="panel">
+              <p className="principle-index">01</p>
               <h3 className="type-h3">{copy("manifesto.principle.1.title")}</h3>
               <p>{copy("manifesto.principle.1.body")}</p>
             </article>
             <article className="panel">
+              <p className="principle-index">02</p>
               <h3 className="type-h3">{copy("manifesto.principle.2.title")}</h3>
               <p>{copy("manifesto.principle.2.body")}</p>
             </article>
             <article className="panel">
+              <p className="principle-index">03</p>
               <h3 className="type-h3">{copy("manifesto.principle.3.title")}</h3>
               <p>{copy("manifesto.principle.3.body")}</p>
             </article>
             <article className="panel">
+              <p className="principle-index">04</p>
               <h3 className="type-h3">{copy("manifesto.principle.4.title")}</h3>
               <p>{copy("manifesto.principle.4.body")}</p>
             </article>
           </div>
           <h2 className="type-h2">{copy("manifesto.not.h2")}</h2>
-          <ul>
+          <ul className="not-list">
             <li>{copy("manifesto.not.1")}</li>
             <li>{copy("manifesto.not.2")}</li>
             <li>{copy("manifesto.not.3")}</li>

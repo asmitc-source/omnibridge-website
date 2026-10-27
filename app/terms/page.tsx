@@ -15,6 +15,7 @@ export default function TermsPage() {
           <T k="terms.updated" />
         </p>
         <LegalBlocks
+          tocLabel="terms.h1"
           blocks={[
             { tag: "h2", key: "terms.s1.h" },
             { tag: "p", key: "terms.s1.p1" },

@@ -20,6 +20,8 @@ type Step = {
 const script = scriptJson as { trust_excerpt_start: string; steps: Step[] };
 const STEPS = script.steps;
 const byId = new Map(STEPS.map((step) => [step.id, step]));
+const OPENING_PRICE =
+  STEPS.find((step) => step.branch === "main" && step.ui_event === "ticker.set" && step.price != null)?.price ?? null;
 
 const TEXT: Record<string, CopyKey> = {
   s01: "demo.step.s01.text",
@@ -249,7 +251,7 @@ export function DemoSimulation({
     if (!step) return current;
     if (step.ui_event === "ticker.set" || step.ui_event === "ticker.revert") return step.price;
     return current;
-  }, null);
+  }, OPENING_PRICE);
   const flagged = shown.some((id) => byId.get(id)?.ui_event === "policy_panel.flag_prepay");
   const outcome = shown.includes("s15a") ? "approved" : shown.includes("s15b") ? "rejected" : null;
 
@@ -278,22 +280,25 @@ export function DemoSimulation({
               {copy("demo.label.paused")}
             </span>
           ) : null}
-          <button type="button" className="btn btn-text" onClick={() => setPaused((value) => !value)}>
-            {paused ? copy("demo.label.resume") : copy("demo.label.pause")}
-          </button>
-          <button type="button" className="btn btn-text" aria-keyshortcuts="R" onClick={replay}>
-            {copy("demo.label.replay")}
-          </button>
-          {reduced && !running ? (
-            <button type="button" className="btn btn-secondary" onClick={() => setRunning(true)}>
-              {copy("demo.label.start")}
+          <span className="room-controls">
+            {reduced && !running ? (
+              <button type="button" className="btn btn-text" onClick={() => setRunning(true)}>
+                {copy("demo.label.start")}
+              </button>
+            ) : (
+              <button type="button" className="btn btn-text" onClick={() => setPaused((value) => !value)}>
+                {paused ? copy("demo.label.resume") : copy("demo.label.pause")}
+              </button>
+            )}
+            {reduced && running ? (
+              <button type="button" className="btn btn-text" onClick={revealNext}>
+                {copy("demo.label.next")}
+              </button>
+            ) : null}
+            <button type="button" className="btn btn-text" aria-keyshortcuts="R" onClick={replay}>
+              {copy("demo.label.replay")}
             </button>
-          ) : null}
-          {reduced && running ? (
-            <button type="button" className="btn btn-secondary" onClick={revealNext}>
-              {copy("demo.label.next")}
-            </button>
-          ) : null}
+          </span>
         </div>
         <div className="room-body">
           <ol className="cast">
@@ -301,12 +306,14 @@ export function DemoSimulation({
               <div>{copy("demo.cast.system.label")}</div>
               <div className="role">{copy("demo.cast.system.role")}</div>
             </li>
-            <li data-company-chip="1" data-lean="" className="cast-chip">
-              <div>{copy("demo.cast.buyer.label")}</div>
-              <div className="company">{copy("demo.cast.buyer.company")}</div>
-              <div className="role">{copy("demo.cast.buyer.role")}</div>
+            <li className="cast-slot">
+              <div data-company-chip="1" data-lean="" className="cast-chip">
+                <div>{copy("demo.cast.buyer.label")}</div>
+                <div className="company">{copy("demo.cast.buyer.company")}</div>
+                <div className="role">{copy("demo.cast.buyer.role")}</div>
+              </div>
+              <p className="fictional">{copy("demo.label.fictional")}</p>
             </li>
-            <li className="fictional">{copy("demo.label.fictional")}</li>
             {(["supplier_a", "supplier_b", "supplier_c"] as const).map((id) => (
               <li key={id} data-lean="" className="cast-chip">
                 <div>{copy(LABEL[id]!)}</div>
@@ -332,7 +339,7 @@ export function DemoSimulation({
               <div className="role">{copy("demo.cast.approver.role")}</div>
             </li>
           </ol>
-          <div>
+          <div className="room-stream">
             {shown.map((id) => {
               const step = byId.get(id);
               if (!step) return null;
@@ -365,12 +372,12 @@ export function DemoSimulation({
             ) : null}
             {reduced && shown.includes("s12") && !decision ? <p className="muted">{copy("demo.label.idle_hint")}</p> : null}
           </div>
-          <div>
+          <div className="room-side">
             <div className="ticker">
               <div className="muted">{copy("demo.label.ticker")}</div>
               <strong>{price == null ? "" : price}</strong>
             </div>
-            <div className="panel" style={{ marginTop: 12 }}>
+            <div className="panel">
               <h3 className="type-h4">{copy("demo.label.policy_title")}</h3>
               <p>{copy("demo.label.policy_price")}</p>
               <p className={flagged ? "policy-row flagged" : "policy-row"}>{copy("demo.label.policy_prepay")}</p>
