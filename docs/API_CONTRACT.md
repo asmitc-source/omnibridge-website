@@ -1,4 +1,6 @@
-# OmniBridge waitlist API contract (v0.3, 2026-10-27)
+# OmniBridge waitlist API contract (v0.3.1, 2026-10-27)
+
+**Changelog (v0.3.1):** no API change. Confirmation footer is `[LEGAL ENTITY] · [REGISTERED ADDRESS] · hello@[domain]`. The product name in runtime copy comes from `PRODUCT_NAME` (`{{product}}` in the email). Sending stays blocked while any placeholder remains.
 
 **Changelog (v0.3):** a POST with no `Origin` header is `403 forbidden_origin` when `ALLOWED_ORIGINS` is non-empty (an empty list is unchanged). Referral identity keeps the full local part, including the `+tag`, only for `ob-qa+` addresses on reserved test domains, so distinct preview QA cases can earn credit. Every other address still strips `+tag`.
 
@@ -100,9 +102,9 @@ How this is implemented:
 
 Off by default (`WAITLIST_EMAIL_ENABLED=false`, `RESEND_FROM` empty) until Claire approves the sender domain. Signups work without it, and status is recorded as `skipped`. The email is sent after the response, so it never slows down or breaks the form. Duplicates never trigger it.
 
-Template text comes verbatim from copy deck v1.1, section C3.3 (`email.confirm.*` keys), held in `lib/copy/emailConfirm.ts`. Merge tags: `{{position}}`, `{{share_url}}`, `{{site_url}}`, `{{privacy_url}}` (= `SITE_URL/privacy`), `{{unsubscribe_url}}` (= `WAITLIST_UNSUBSCRIBE_URL`).
+Template text is held in `lib/copy/emailConfirm.ts` (copy deck v1.1, plus Claire's 2026-10-27 footer). Merge tags: `{{product}}` (from `PRODUCT_NAME`), `{{position}}`, `{{share_url}}`, `{{site_url}}`, `{{privacy_url}}` (= `SITE_URL/privacy`), `{{unsubscribe_url}}` (= `WAITLIST_UNSUBSCRIBE_URL`).
 
-Send gate: even with email switched on, nothing sends while `WAITLIST_UNSUBSCRIBE_URL` is empty or any copy string still has a placeholder. Today `email.confirm.footer.entity` is `[LEGAL ENTITY] · hello@omnibridge.example` in the deck, so the gate holds until Copy replaces it.
+Send gate: even with email switched on, nothing sends while `WAITLIST_UNSUBSCRIBE_URL` is empty or any copy string still has a placeholder. Today `email.confirm.footer.entity` is `[LEGAL ENTITY] · [REGISTERED ADDRESS] · hello@[domain]`, so the gate holds until Copy replaces it.
 
 ## QA data cleanup (service_role only)
 

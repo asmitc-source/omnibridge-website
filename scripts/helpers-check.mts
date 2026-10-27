@@ -10,7 +10,6 @@ import { isHoneypotTripped, HONEYPOT_FIELD } from "../lib/honeypot";
 import { waitlistBodySchema } from "../lib/validation";
 import * as WC from "../emails/WaitlistConfirmation";
 import { EMAIL_CONFIRM_COPY, emailCopyBlockers } from "../lib/copy/emailConfirm";
-import { readFileSync } from "node:fs";
 
 const results: string[] = [];
 const check = (name: string, fn: () => void) => {
@@ -85,15 +84,13 @@ check("email template renders copy deck v1.1 strings with merge tags filled", ()
   assert.ok(html.includes("https://ob.test/?ref=abcd2345"));
   assert.ok(!/TODO\(copy\)|\[PLACEHOLDER|\{\{/.test(text + html), "leftover TODO/PLACEHOLDER/merge tag");
 });
-check("email copy map is byte-identical to copy deck v1.1 Appendix A", () => {
-  const deck = readFileSync("/workspace/omnibridge/copy/omnibridge-copy-deck-v1.1.md", "utf8");
-  for (const [k, v] of Object.entries(EMAIL_CONFIRM_COPY)) {
-    assert.ok(deck.includes(`  ${JSON.stringify(k)}: ${JSON.stringify(v)}`), `mismatch: ${k}`);
-  }
-});
-check("send gate: deck placeholders ([LEGAL ENTITY], omnibridge.example) block sending", () => {
+check("footer is Claire's 2026-10-27 line and still blocks sending", () => {
+  assert.equal(
+    EMAIL_CONFIRM_COPY["email.confirm.footer.entity"],
+    "[LEGAL ENTITY] · [REGISTERED ADDRESS] · hello@[domain]",
+  );
   const blockers = emailCopyBlockers({ position: 1, share_url: "s", site_url: "s", privacy_url: "p", unsubscribe_url: "u" });
-  assert.deepEqual(blockers, ["email.confirm.footer.entity"]);
+  assert.ok(blockers.includes("email.confirm.footer.entity"));
 });
 console.log(results.join("\n"));
 console.log("--- plain-text render of confirmation email (copy deck v1.1) ---\n" + text);

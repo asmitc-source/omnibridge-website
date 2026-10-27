@@ -32,7 +32,7 @@ export const env = {
   emailEnabled: () => optional("WAITLIST_EMAIL_ENABLED") === "true",
   /** Optional: if unset, confirmation emails are skipped (status = 'skipped'). */
   resendApiKey: () => optional("RESEND_API_KEY"),
-  /** e.g. "OmniBridge <waitlist@TODO-domain>" - pending Claire's domain decision. */
+  /** e.g. `${PRODUCT_NAME} <waitlist@TODO-domain>` — pending Claire's domain decision. */
   resendFrom: () => optional("RESEND_FROM"),
   resendReplyTo: () => optional("RESEND_REPLY_TO"),
   /** Merge value for {{unsubscribe_url}}. Email will not send until this is set (no endpoint exists yet). */
