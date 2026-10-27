@@ -113,6 +113,36 @@ select 5 as hit, allowed, hits from public.waitlist_rate_limit_hit('signup:' || 
 select 6 as hit, allowed, hits from public.waitlist_rate_limit_hit('signup:' || repeat('a',64), 5, 600);
 select 'other IP' as hit, allowed, hits from public.waitlist_rate_limit_hit('signup:' || repeat('b',64), 5, 600);
 
+\echo '--- 8c. 6th signup hit and 31st position hit in one window are denied ---'
+do $$
+declare
+  i int;
+  got_allowed boolean;
+  got_hits int;
+begin
+  for i in 1..6 loop
+    select t.allowed, t.hits into got_allowed, got_hits
+    from public.waitlist_rate_limit_hit('signup:' || repeat('81', 32), 5, 600) t;
+    if i < 6 then
+      assert got_allowed and got_hits = i, format('signup hit %s should be allowed (allowed=%s hits=%s)', i, got_allowed, got_hits);
+    else
+      assert not got_allowed and got_hits = 6, format('6th signup hit should be denied (allowed=%s hits=%s)', got_allowed, got_hits);
+    end if;
+  end loop;
+  raise notice 'PASS signup rate limit: 6th POST in the window is denied (hits 1-5 allowed) -> 429 rate_limited';
+
+  for i in 1..31 loop
+    select t.allowed, t.hits into got_allowed, got_hits
+    from public.waitlist_rate_limit_hit('position:' || repeat('82', 32), 30, 600) t;
+    if i < 31 then
+      assert got_allowed and got_hits = i, format('position hit %s should be allowed (allowed=%s hits=%s)', i, got_allowed, got_hits);
+    else
+      assert not got_allowed and got_hits = 31, format('31st position hit should be denied (allowed=%s hits=%s)', got_allowed, got_hits);
+    end if;
+  end loop;
+  raise notice 'PASS position rate limit: 31st request in the window is denied (hits 1-30 allowed) -> 429 rate_limited';
+end $$;
+
 \echo '--- 8b. Private total: no function or view exposes a total column ---'
 do $$ declare n int; begin
   select count(*) into n from information_schema.columns
@@ -228,6 +258,29 @@ do $$ declare n int; begin
     join public.waitlist_signups w using (id) where w.email='alice+x@gmail.com';
   assert n = 0, 'gmail plus self-referral credited: ' || n;
   raise notice 'PASS alice+x@gmail.com / alice+y@gmail.com earns 0 (same identity)';
+end $$;
+
+\echo '--- 13. Same IP hash earns no credit; a different IP hash does (count_same_ip_referrals=false) ---'
+do $$ begin
+  assert (select count_same_ip_referrals from public.waitlist_settings) = false,
+    'count_same_ip_referrals must be false';
+  raise notice 'PASS count_same_ip_referrals is false';
+end $$;
+select 'SameRef' as who, already_registered from public.waitlist_signup('sameip-ref@acme.test','buyer',null,null,null,null, repeat('83',32));
+select 'SameNew' as who, already_registered from public.waitlist_signup('sameip-new@acme.test','buyer',null,null,null,
+  (select referral_code from public.waitlist_signups where email='sameip-ref@acme.test'), repeat('83',32));
+select 'DiffRef' as who, already_registered from public.waitlist_signup('diffip-ref@acme.test','buyer',null,null,null,null, repeat('84',32));
+select 'DiffNew' as who, already_registered from public.waitlist_signup('diffip-new@acme.test','buyer',null,null,null,
+  (select referral_code from public.waitlist_signups where email='diffip-ref@acme.test'), repeat('85',32));
+do $$ declare n int; begin
+  select p.referral_count into n from public.waitlist_positions p
+    join public.waitlist_signups w using (id) where w.email='sameip-ref@acme.test';
+  assert n = 0, 'same IP hash referral credited: ' || n;
+  raise notice 'PASS same IP hash referral earns 0 credit when count_same_ip_referrals=false';
+  select p.referral_count into n from public.waitlist_positions p
+    join public.waitlist_signups w using (id) where w.email='diffip-ref@acme.test';
+  assert n = 1, 'different IP hash referral not credited: ' || n;
+  raise notice 'PASS different IP hash referral earns 1 credit';
 end $$;
 
 \echo '--- 9. anon / authenticated cannot read emails or call RPCs ---'

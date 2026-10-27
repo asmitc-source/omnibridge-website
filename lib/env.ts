@@ -1,4 +1,5 @@
 import "server-only";
+import { POSITION_RATE_LIMIT, SIGNUP_RATE_LIMIT } from "./rateLimitPolicy";
 
 /**
  * Server-only environment access. Secrets here must NEVER be prefixed with
@@ -44,9 +45,9 @@ export const env = {
       .split(",")
       .map((s) => s.trim())
       .filter(Boolean),
-  signupRateLimit: () => intVar("WAITLIST_SIGNUP_RATE_LIMIT", 5),
+  signupRateLimit: () => intVar("WAITLIST_SIGNUP_RATE_LIMIT", SIGNUP_RATE_LIMIT),
   signupRateWindowSeconds: () => intVar("WAITLIST_SIGNUP_RATE_WINDOW_SECONDS", 600),
-  positionRateLimit: () => intVar("WAITLIST_POSITION_RATE_LIMIT", 30),
+  positionRateLimit: () => intVar("WAITLIST_POSITION_RATE_LIMIT", POSITION_RATE_LIMIT),
   positionRateWindowSeconds: () => intVar("WAITLIST_POSITION_RATE_WINDOW_SECONDS", 600),
   /** Opt-in Gmail dot/plus canonicalisation for duplicate detection. Default off. */
   canonicaliseGmail: () => optional("WAITLIST_CANONICALISE_GMAIL") === "true",

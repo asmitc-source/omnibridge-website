@@ -3,6 +3,7 @@ import { env } from "@/lib/env";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { clientIp, hashIp } from "@/lib/ipHash";
 import { hitRateLimit } from "@/lib/rateLimit";
+import { rateLimitHttpError } from "@/lib/rateLimitPolicy";
 import { referralCodeSchema } from "@/lib/validation";
 import { jsonError, jsonOk } from "@/lib/http";
 
@@ -18,8 +19,9 @@ export async function GET(req: NextRequest) {
       env.positionRateLimit(),
       env.positionRateWindowSeconds(),
     );
-    if (!rl.allowed) {
-      return jsonError(429, "rate_limited", "Too many requests. Please try again later.", {
+    const limited = rateLimitHttpError(rl.allowed);
+    if (limited) {
+      return jsonError(limited.status, limited.code, "Too many requests. Please try again later.", {
         retryAfterSeconds: rl.retryAfterSeconds,
       });
     }

@@ -6,6 +6,7 @@ import { isDisposableDomain } from "@/lib/disposable";
 import { isBlockedReservedEmail } from "@/lib/reservedDomains";
 import { clientIp, hashIp } from "@/lib/ipHash";
 import { hitRateLimit } from "@/lib/rateLimit";
+import { rateLimitHttpError } from "@/lib/rateLimitPolicy";
 import { isHoneypotTripped } from "@/lib/honeypot";
 import { waitlistBodySchema } from "@/lib/validation";
 import { jsonError, jsonOk } from "@/lib/http";
@@ -56,8 +57,9 @@ export async function POST(req: NextRequest) {
       env.signupRateLimit(),
       env.signupRateWindowSeconds(),
     );
-    if (!rl.allowed) {
-      return jsonError(429, "rate_limited", "Too many attempts. Please try again later.", {
+    const limited = rateLimitHttpError(rl.allowed);
+    if (limited) {
+      return jsonError(limited.status, limited.code, "Too many attempts. Please try again later.", {
         retryAfterSeconds: rl.retryAfterSeconds,
       });
     }
