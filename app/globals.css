@@ -279,11 +279,13 @@ main {
 
 .placeholder-chip {
   display: inline-block;
+  max-width: 100%;
   margin-inline: 2px;
   padding: 0 4px;
   border: 1px dashed var(--color-line-strong);
   border-radius: var(--radius-xs);
   color: inherit;
+  overflow-wrap: anywhere;
 }
 
 .hp {
@@ -949,8 +951,13 @@ html.lenis, html.lenis body { height: auto; }
   font: inherit;
 }
 
-.table-wrap { overflow-x: auto; }
+.table-wrap {
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+}
 table { width: 100%; border-collapse: collapse; }
+td, th { overflow-wrap: anywhere; }
 th, td { text-align: left; padding: 12px; border-bottom: 1px solid var(--color-line); vertical-align: top; }
 th { font-size: 0.875rem; color: var(--color-text-2); font-weight: 500; }
 
@@ -1031,20 +1038,43 @@ th { font-size: 0.875rem; color: var(--color-text-2); font-weight: 500; }
 .not-found-copy .hero-actions { justify-content: center; }
 .lost-node { display: block; width: 120px; height: 80px; margin: 8px auto 16px; }
 
-.legal-layout { display: grid; gap: 28px; }
+.legal-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 28px;
+  min-width: 0;
+}
+.prose { min-width: 0; }
+.prose :where(p, li, h2, a, span) { overflow-wrap: anywhere; }
+.prose.measure { max-width: 68ch; }
 @media (min-width: 1280px) {
   .legal-layout { grid-template-columns: 220px minmax(0, 68ch); align-items: start; }
   .legal-toc { position: sticky; top: 88px; }
 }
+.legal-toc { min-width: 0; max-width: 100%; }
 .legal-toc summary { cursor: pointer; font-weight: 600; }
-.legal-toc ol { list-style: none; margin: 12px 0 0; padding: 0; display: flex; gap: 12px; overflow-x: auto; }
+.legal-toc-scroll {
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+}
+.legal-toc ol {
+  list-style: none;
+  width: max-content;
+  min-width: 100%;
+  margin: 12px 0 0;
+  padding: 0;
+  display: flex;
+  gap: 12px;
+}
 .legal-toc a { color: var(--color-text-2); font-size: 0.875rem; text-decoration: none; white-space: nowrap; }
 .legal-toc a:hover { color: var(--color-text-1); }
 @media (min-width: 1280px) {
   .legal-toc summary { list-style: none; pointer-events: none; }
   .legal-toc summary::-webkit-details-marker { display: none; }
-  .legal-toc ol { display: grid; overflow: visible; }
-  .legal-toc a { white-space: normal; }
+  .legal-toc-scroll { overflow: visible; }
+  .legal-toc ol { display: grid; width: auto; }
+  .legal-toc a { white-space: normal; overflow-wrap: anywhere; }
 }
 
 .mock-card {

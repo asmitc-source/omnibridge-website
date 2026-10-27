@@ -35,7 +35,7 @@ export default function ProcurementPage() {
               <input type="radio" name="compare-view" id="compare-with" />
               <label htmlFor="compare-with">{copy("procurement.compare.col.with")}</label>
             </div>
-            <div className="table-wrap" role="region" aria-label={copy("procurement.alt.compare")}>
+            <div className="table-wrap" role="region" tabIndex={0} aria-label={copy("procurement.alt.compare")}>
               <table>
                 <thead>
                   <tr>

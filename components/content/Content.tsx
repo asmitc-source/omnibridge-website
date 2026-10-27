@@ -194,13 +194,15 @@ export function LegalBlocks({ blocks, tocLabel }: { blocks: Block[]; tocLabel: C
     <div className="legal-layout">
       <details className="legal-toc" open>
         <summary>{copy(tocLabel)}</summary>
-        <ol>
-          {headings.map((block) => (
-            <li key={block.key}>
-              <a href={`#${block.key}`}>{copy(block.key)}</a>
-            </li>
-          ))}
-        </ol>
+        <div className="legal-toc-scroll" role="region" tabIndex={0} aria-label={copy(tocLabel)}>
+          <ol>
+            {headings.map((block) => (
+              <li key={block.key}>
+                <a href={`#${block.key}`}>{copy(block.key)}</a>
+              </li>
+            ))}
+          </ol>
+        </div>
       </details>
       <div className="prose measure">{nodes}</div>
     </div>
