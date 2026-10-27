@@ -92,18 +92,43 @@ check("no runtime string contains OmniBridge outside config/site.ts", () => {
 check("current copy blockers include footer.entity", () => {
   const blockers = emailCopyBlockers(VARS);
   assert.ok(blockers.includes("email.confirm.footer.entity"), blockers.join(","));
-  assert.deepEqual(blockers, ["email.confirm.footer.entity"]);
 });
 
-check("a fully filled footer leaves no blockers", () => {
-  const filled = {
-    ...EMAIL_CONFIRM_COPY,
+function blockersFor(text: string): string[] {
+  return emailCopyBlockers(VARS, { sample: text });
+}
+
+check("[REGISTERED ADDRESS] makes emailCopyBlockers non-empty", () => {
+  assert.ok(blockersFor("Acme · [REGISTERED ADDRESS] · hello@example.com").length > 0);
+});
+
+check("[domain] makes emailCopyBlockers non-empty", () => {
+  assert.ok(blockersFor("hello@[domain]").length > 0);
+});
+
+check("{brand} makes emailCopyBlockers non-empty", () => {
+  assert.ok(blockersFor("The {brand} team").length > 0);
+  assert.ok(blockersFor("The {BRAND} team").length > 0);
+});
+
+check("{{brand}} makes emailCopyBlockers non-empty", () => {
+  assert.ok(blockersFor("The {{brand}} team").length > 0);
+  assert.ok(blockersFor("The {{BRAND}} team").length > 0);
+});
+
+check("a fully resolved copy yields no blockers", () => {
+  const resolved = {
+    "email.confirm.subject": `You're #42 on the ${BRAND.name} waitlist`,
+    "email.confirm.signoff": `The ${BRAND.name} team`,
     "email.confirm.footer.entity": "Example Ltd · 1 Market Street, London · hello@example.com",
+    "email.confirm.footer.reason": `You're getting this because you joined the ${BRAND.name} waitlist at https://example.com.`,
   };
-  assert.deepEqual(emailCopyBlockers(VARS, filled), []);
+  assert.deepEqual(emailCopyBlockers(VARS, resolved), []);
 });
 
 check("sign-off renders The OmniBridge team and footer stays the placeholder line", () => {
+  assert.equal(EMAIL_CONFIRM_COPY["email.confirm.signoff"], "The {{brand}} team");
+  assert.equal(EMAIL_CONFIRM_COPY["email.confirm.signoff"].includes(BRAND.name), false);
   assert.equal(emailCopy("email.confirm.signoff", VARS), `The ${BRAND.name} team`);
   assert.equal(emailCopy("email.confirm.subject", VARS), `You're #42 on the ${BRAND.name} waitlist`);
   assert.equal(emailCopy("email.confirm.p1", VARS), `You're on the ${BRAND.name} waitlist. Your spot is #42.`);

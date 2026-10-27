@@ -71,7 +71,9 @@ export function emailCopy(key: EmailConfirmKey, vars: EmailMergeVars): string {
 const PLACEHOLDER_PATTERNS = [
   /\[LEGAL ENTITY\]/,
   /\[REGISTERED ADDRESS\]/,
-  /@\[domain\]/,
+  /\[domain\]/i,
+  /\{brand\}/i,
+  /\{\{brand\}\}/i,
   /\[PLACEHOLDER/i,
   /omnibridge\.example/i,
   /TODO\(copy\)/,
@@ -79,14 +81,20 @@ const PLACEHOLDER_PATTERNS = [
 ];
 
 /**
- * Lists copy keys whose rendered text still contains placeholders.
- * Pass `copy` to try a replacement (tests). Empty array = ready to send.
+ * Lists copy keys that still contain placeholders.
+ * Merge tags are filled first. `{brand}` / `{{brand}}` (any case) are also
+ * checked on the template, so either brace form blocks even when a lowercase
+ * `{{brand}}` would otherwise be filled. Pass `copy` to try a replacement (tests).
+ * Empty array = ready to send.
  */
 export function emailCopyBlockers(
   vars: EmailMergeVars,
   copy: { readonly [key: string]: string } = EMAIL_CONFIRM_COPY,
 ): string[] {
-  return Object.keys(copy).filter((key) =>
-    PLACEHOLDER_PATTERNS.some((re) => re.test(fillMergeTags(copy[key], vars))),
-  );
+  return Object.keys(copy).filter((key) => {
+    const raw = copy[key];
+    const filled = fillMergeTags(raw, vars);
+    const unresolvedBrand = /\{brand\}/i.test(raw);
+    return unresolvedBrand || PLACEHOLDER_PATTERNS.some((re) => re.test(filled));
+  });
 }

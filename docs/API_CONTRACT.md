@@ -104,7 +104,7 @@ Off by default (`WAITLIST_EMAIL_ENABLED=false`, `RESEND_FROM` empty) until Clair
 
 Template text is held in `lib/copy/emailConfirm.ts` (copy deck v1.1, plus Claire's 2026-10-27 footer). Merge tags: `{{brand}}` (from `BRAND.name` in `config/site.ts`), `{{position}}`, `{{share_url}}`, `{{site_url}}`, `{{privacy_url}}` (= `SITE_URL/privacy`), `{{unsubscribe_url}}` (= `WAITLIST_UNSUBSCRIBE_URL`).
 
-Send gate: even with email switched on, nothing sends while `WAITLIST_UNSUBSCRIBE_URL` is empty or any copy string still has a placeholder. Today `email.confirm.footer.entity` is `[LEGAL ENTITY] · [REGISTERED ADDRESS] · hello@[domain]`, so the gate holds until Copy replaces it.
+Send gate: even with email switched on, nothing sends while `WAITLIST_UNSUBSCRIBE_URL` is empty or any copy string still has a placeholder. The gate matches `[LEGAL ENTITY]`, `[REGISTERED ADDRESS]`, `[domain]` (including `hello@[domain]`), and an unresolved brand token in either form, `{brand}` or `{{brand}}`, case-insensitive. Today `email.confirm.footer.entity` is `[LEGAL ENTITY] · [REGISTERED ADDRESS] · hello@[domain]`, and the template still contains `{{brand}}`, so the gate holds until Copy replaces the footer and the brand token is only the filled name.
 
 ## QA data cleanup (service_role only)
 
