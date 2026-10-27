@@ -456,6 +456,7 @@ main {
 .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
 @media (max-width: 767px) {
   .hero-actions .btn { width: 100%; }
+  .hero-copy { transform: translateY(-64px); }
 }
 
 .poster-stack { position: absolute; inset: 0; z-index: 0; }
@@ -694,6 +695,17 @@ html.lenis, html.lenis body { height: auto; }
   width: min(400px, calc(100% - 32px));
   padding: 16px;
   border-radius: var(--radius-md);
+}
+@media (max-width: 767px) {
+  .cookie { max-height: 42svh; overflow: auto; padding: 12px; }
+  .cookie > p.muted {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    margin: 8px 0;
+  }
+  .cookie .btn { min-height: 44px; padding-inline: 12px; }
 }
 .cookie-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
 
