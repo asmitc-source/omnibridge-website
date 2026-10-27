@@ -25,5 +25,11 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Test
+        run: npm test
+
+      - name: Check alert colour
+        run: npm run check:red
+
       - name: Build
         run: npm run build

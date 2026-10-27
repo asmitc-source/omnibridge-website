@@ -21,6 +21,14 @@ Open [http://localhost:3000](http://localhost:3000). Fill in `.env.local` before
 | `npm run start` | Serve the production build |
 | `npm run lint` | ESLint |
 | `npm run typecheck` | `tsc --noEmit` |
+| `npm run test` | API helper checks and `{brand}` interpolation |
+| `npm run check:red` | Alert-colour gate. Those styles may appear only in `RedAlertModal`, `KillSwitchButton`, and `PausePulse`, plus a token `reserved` block |
+| `npm run check:copy` | Rendered-copy gate. Needs `lib/copy/site.copy.json` from the approved deck |
+| `npm run build:copy` | Writes that flat key-to-string file from the deck. It does not invent keys |
+
+`check:copy` is not in CI until the dictionary exists. `check:red` and `npm test` are.
+
+The home page is a shell (`components/shell/SiteShell.tsx`) around the existing placeholder. Section copy is not in the repo yet. `{brand}` in site copy is filled from `BRAND.name` at render (`lib/copy/interpolate.ts`). A rename is a one-line change in `config/site.ts`. `SHOW_WAITLIST_TOTAL` in `config/flags.ts` is `false`.
 
 `npm run build` does not need environment variables. Handlers read them when a request arrives.
 
