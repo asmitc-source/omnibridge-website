@@ -11,7 +11,7 @@
 import assert from "node:assert/strict";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
-import { BRAND } from "../config/site.ts";
+import { BRAND, SIGNED_RECORD_TERM } from "../config/site.ts";
 import { isFlagOn } from "../config/flags.ts";
 
 const ROOT = process.cwd();
@@ -204,6 +204,44 @@ check("flagged-hidden keys stay unrendered while the flag is off", () => {
     .map(([key, flag]) => `${key} (${flag})`)
     .sort();
   assert.deepEqual(shown, []);
+});
+
+check("dictionary values do not contain the literal brand name", () => {
+  assert.ok(dictionary, "dictionary missing");
+  const hits = Object.entries(dictionary!)
+    .filter(([, value]) => value.includes(BRAND.name))
+    .map(([key]) => key);
+  assert.deepEqual(hits, []);
+});
+
+check("wordmarks interpolate to the brand name", () => {
+  assert.ok(dictionary, "dictionary missing");
+  assert.equal(dictionary!["nav.wordmark"], "{brand}");
+  assert.equal(dictionary!["footer.wordmark"], "{brand}");
+  const rendered = dictionary!["nav.wordmark"].replaceAll("{brand}", BRAND.name);
+  assert.equal(rendered, BRAND.name);
+  assert.ok(BRAND.name.length <= 12);
+});
+
+check("demo script matches deck keys and the signed-record term", () => {
+  const script = JSON.parse(readFileSync(join(ROOT, "lib/copy/demo.script.json"), "utf8")) as {
+    signed_record_term: string;
+    steps: { id: string; text: string; speaker: string }[];
+    cast: { id: string; label: string; company: string | null; role: string }[];
+  };
+  assert.equal(script.signed_record_term, SIGNED_RECORD_TERM);
+  assert.equal(script.steps.length, 18);
+  assert.ok(dictionary, "dictionary missing");
+  for (const step of script.steps) {
+    assert.equal(dictionary![`demo.step.${step.id}.text`], step.text, step.id);
+  }
+  for (const member of script.cast) {
+    assert.equal(dictionary![`demo.cast.${member.id}.label`], member.label, member.id);
+    assert.equal(dictionary![`demo.cast.${member.id}.role`], member.role, member.id);
+    if (member.company) {
+      assert.equal(dictionary![`demo.cast.${member.id}.company`], member.company, member.id);
+    }
+  }
 });
 
 check("demo.label.fictional exists and renders once under the first company chip", () => {

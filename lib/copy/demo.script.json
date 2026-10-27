@@ -1,0 +1,294 @@
+{
+  "version": "c2-v1",
+  "currency": "USD",
+  "price_unit": "USD per tonne",
+  "illustrative": true,
+  "signed_record_term": "tamper-evident",
+  "trust_excerpt_start": "s11",
+  "cast": [
+    {
+      "id": "system",
+      "label": "{brand}",
+      "company": null,
+      "role": "Deal room (simulated)"
+    },
+    {
+      "id": "buyer",
+      "label": "Buyer agent",
+      "company": "Yvenmorr Fabrication",
+      "role": "Buys 500 t of steel"
+    },
+    {
+      "id": "supplier_a",
+      "label": "Supplier A agent",
+      "company": "Velditor Steel",
+      "role": "Supplier"
+    },
+    {
+      "id": "supplier_b",
+      "label": "Supplier B agent",
+      "company": "Pelquarn Metals",
+      "role": "Supplier"
+    },
+    {
+      "id": "supplier_c",
+      "label": "Supplier C agent",
+      "company": "Tessimar Steelworks",
+      "role": "Supplier"
+    },
+    {
+      "id": "approver",
+      "label": "Approver",
+      "company": "Yvenmorr Fabrication",
+      "role": "Head of Procurement (human)"
+    }
+  ],
+  "steps": [
+    {
+      "id": "s01",
+      "branch": "main",
+      "t_ms": 0,
+      "speaker": "system",
+      "type": "system",
+      "text": "Simulation started. Buyer policy loaded.",
+      "price": null,
+      "ui_event": "policy_panel.show"
+    },
+    {
+      "id": "s02",
+      "branch": "main",
+      "t_ms": 1200,
+      "speaker": "buyer",
+      "type": "bubble",
+      "text": "Request for quote: 500 t hot-rolled coil, delivered within 30 days.",
+      "price": null,
+      "ui_event": "rfq.broadcast"
+    },
+    {
+      "id": "s03",
+      "branch": "main",
+      "t_ms": 2600,
+      "speaker": "system",
+      "type": "system",
+      "text": "3 verified supplier agents joined the deal room.",
+      "price": null,
+      "ui_event": "suppliers.join"
+    },
+    {
+      "id": "s04",
+      "branch": "main",
+      "t_ms": 4000,
+      "speaker": "supplier_a",
+      "type": "bubble",
+      "text": "Quote: $768/t. Delivery in 21 days.",
+      "price": 768,
+      "ui_event": "ticker.set"
+    },
+    {
+      "id": "s05",
+      "branch": "main",
+      "t_ms": 5200,
+      "speaker": "supplier_b",
+      "type": "bubble",
+      "text": "Quote: $781/t. Delivery in 28 days.",
+      "price": 768,
+      "ui_event": "ticker.hold"
+    },
+    {
+      "id": "s06",
+      "branch": "main",
+      "t_ms": 6400,
+      "speaker": "supplier_c",
+      "type": "bubble",
+      "text": "Quote: $759/t. Delivery in 25 days.",
+      "price": 759,
+      "ui_event": "ticker.set"
+    },
+    {
+      "id": "s07",
+      "branch": "main",
+      "t_ms": 8000,
+      "speaker": "buyer",
+      "type": "bubble",
+      "text": "Counteroffer to Supplier C: $735/t.",
+      "price": 759,
+      "ui_event": "ticker.hold"
+    },
+    {
+      "id": "s08",
+      "branch": "main",
+      "t_ms": 9600,
+      "speaker": "supplier_c",
+      "type": "price_tick",
+      "text": "Revised: $748/t at standard terms.",
+      "price": 748,
+      "ui_event": "ticker.set"
+    },
+    {
+      "id": "s09",
+      "branch": "main",
+      "t_ms": 11000,
+      "speaker": "buyer",
+      "type": "bubble",
+      "text": "Our limit is $745/t. Can you meet it?",
+      "price": 748,
+      "ui_event": "ticker.hold"
+    },
+    {
+      "id": "s10",
+      "branch": "main",
+      "t_ms": 12600,
+      "speaker": "supplier_c",
+      "type": "price_tick",
+      "text": "$728/t if you prepay 50% on signing.",
+      "price": 728,
+      "ui_event": "ticker.set"
+    },
+    {
+      "id": "s11",
+      "branch": "main",
+      "t_ms": 14000,
+      "speaker": "system",
+      "type": "system",
+      "text": "Policy check: 50% prepayment exceeds your 20% limit.",
+      "price": 728,
+      "ui_event": "policy_panel.flag_prepay"
+    },
+    {
+      "id": "s12",
+      "branch": "main",
+      "t_ms": 15000,
+      "speaker": "system",
+      "type": "alert",
+      "text": "RED ALERT. Deal paused for a human decision.",
+      "price": 728,
+      "ui_event": "alert.open"
+    },
+    {
+      "id": "s13a",
+      "branch": "approve",
+      "t_ms": 0,
+      "speaker": "approver",
+      "type": "action",
+      "text": "Exception approved by the Head of Procurement.",
+      "price": 728,
+      "ui_event": "alert.close_approve"
+    },
+    {
+      "id": "s14a",
+      "branch": "approve",
+      "t_ms": 1200,
+      "speaker": "system",
+      "type": "system",
+      "text": "Agreement signed by both agents.",
+      "price": 728,
+      "ui_event": "deal.sign"
+    },
+    {
+      "id": "s15a",
+      "branch": "approve",
+      "t_ms": 2400,
+      "speaker": "system",
+      "type": "system",
+      "text": "Deal record logged. Signed and tamper-evident.",
+      "price": 728,
+      "ui_event": "record.write"
+    },
+    {
+      "id": "s13b",
+      "branch": "reject",
+      "t_ms": 0,
+      "speaker": "approver",
+      "type": "action",
+      "text": "Prepayment term rejected by the Head of Procurement.",
+      "price": 748,
+      "ui_event": "alert.close_reject"
+    },
+    {
+      "id": "s14b",
+      "branch": "reject",
+      "t_ms": 1200,
+      "speaker": "buyer",
+      "type": "bubble",
+      "text": "Prepayment declined. We'll keep talking at standard terms.",
+      "price": 748,
+      "ui_event": "ticker.revert"
+    },
+    {
+      "id": "s15b",
+      "branch": "reject",
+      "t_ms": 2400,
+      "speaker": "system",
+      "type": "system",
+      "text": "Not signed. The decision is in the deal record.",
+      "price": 748,
+      "ui_event": "record.write"
+    }
+  ],
+  "alert": {
+    "title": "RED ALERT",
+    "subtitle": "Deal paused: outside your policy",
+    "body": "Supplier C offers $728/t, inside your $745 limit. It asks for 50% prepayment. Your policy allows 20%. Your agent can't accept this alone. You decide.",
+    "rows": [
+      {
+        "label": "Price",
+        "value": "$728/t",
+        "status": "Within policy"
+      },
+      {
+        "label": "Prepayment",
+        "value": "50%",
+        "status": "Outside policy (limit 20%)"
+      },
+      {
+        "label": "Delivery",
+        "value": "25 days",
+        "status": "Within policy"
+      }
+    ],
+    "approve_label": "Approve this deal",
+    "reject_label": "Reject",
+    "paused_line": "Every agent in this deal is paused until you choose.",
+    "sr_decision_required": "Decision required",
+    "keyboard": {
+      "escape": "focus_reject_button",
+      "announce": "sr_decision_required",
+      "closes_modal": false,
+      "decides": false
+    }
+  },
+  "outcomes": {
+    "approved": {
+      "heading": "Deal signed",
+      "body": "500 t at $728/t with Supplier C. Approved by the Head of Procurement. Logged to a signed, tamper-evident record.",
+      "record_ref": "Ref OB-SIM-0001 · simulated",
+      "ui_event": "outcome.approved"
+    },
+    "rejected": {
+      "heading": "Deal not signed",
+      "body": "Prepayment rejected by the Head of Procurement. Best offer is back to $748/t. Agents can keep negotiating.",
+      "record_ref": "Ref OB-SIM-0001 · simulated",
+      "ui_event": "outcome.rejected"
+    }
+  },
+  "labels": {
+    "fictional": "Fictional companies. Simulated deal.",
+    "badge": "Simulation",
+    "start": "Run the simulation",
+    "replay": "Replay",
+    "pause": "Pause",
+    "resume": "Resume",
+    "next": "Next step",
+    "ticker": "Best offer (USD/t)",
+    "policy_title": "Buyer policy",
+    "policy_price": "Max price: $745/t",
+    "policy_prepay": "Max prepayment: 20%",
+    "policy_delivery": "Delivery: within 30 days",
+    "verified": "Verified",
+    "paused": "Paused",
+    "idle_hint": "Your call. Approve or reject.",
+    "disclaimer": "Simulated scenario. Companies, people and prices are illustrative, not market data.",
+    "closing": "Agents move fast. Humans hold the keys.",
+    "aria_region": "Simulated negotiation between AI agents"
+  }
+}

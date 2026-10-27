@@ -1,6 +1,7 @@
 /**
- * Fails if alert-red styling appears outside the three allowed components.
- * A `reserved` object in token JSON, and CSS marked reserved, are exempt.
+ * Fails if alert colour appears outside RedAlertModal, KillSwitchButton,
+ * PausePulse, tokens.json, and the generated theme CSS (app/tokens.generated.css).
+ * motion/tokens.ts is not exempt.
  *
  *   node --experimental-strip-types scripts/check-red.mts
  */
@@ -45,6 +46,8 @@ const ROOT = process.cwd();
 function isAllowedPath(path: string): boolean {
   const normalised = path.split(sep).join("/");
   if (normalised.endsWith("scripts/check-red.mts")) return true;
+  if (normalised === "tokens.json" || normalised.endsWith("/tokens.json")) return true;
+  if (normalised === "app/tokens.generated.css") return true;
   return ALLOWED_FILE.test(normalised);
 }
 
@@ -122,6 +125,9 @@ function selfTest(): void {
   assert.equal(isAllowedPath("components/demo/KillSwitchButton.tsx"), true);
   assert.equal(isAllowedPath("components/demo/PausePulse.ts"), true);
   assert.equal(isAllowedPath("components/hero/Hero.tsx"), false);
+  assert.equal(isAllowedPath("tokens.json"), true);
+  assert.equal(isAllowedPath("app/tokens.generated.css"), true);
+  assert.equal(isAllowedPath("motion/tokens.ts"), false);
   const css = "/* reserved:start */\ncolor: #ff3b4e;\n/* reserved:end */\ncolor: #111;";
   assert.equal(PATTERN.test(stripReservedCss(css)), false);
   const flagged = "/* reserved */\ncolor: #ef4444;\ncolor: #111;";

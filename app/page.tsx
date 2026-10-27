@@ -1,12 +1,34 @@
-import { SiteShell } from "@/components/shell/SiteShell";
 import { BRAND } from "@/config/site";
+import { copy } from "@/lib/copy";
+import { pageMetadata, siteOrigin } from "@/lib/seo";
+import { JsonLd } from "@/components/content/Content";
+import { HomeSections } from "@/components/home/HomeSections";
+
+export const metadata = pageMetadata("home");
 
 export default function Home() {
+  const origin = siteOrigin();
   return (
-    <SiteShell>
-      <div className="flex flex-1 items-center justify-center p-8">
-        <h1 className="text-xl font-medium">{BRAND.name} — waitlist coming soon</h1>
-      </div>
-    </SiteShell>
+    <>
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "Organization",
+              name: BRAND.name,
+              url: origin,
+              description: copy("meta.home.description"),
+            },
+            {
+              "@type": "WebSite",
+              name: BRAND.name,
+              url: origin,
+            },
+          ],
+        }}
+      />
+      <HomeSections />
+    </>
   );
 }

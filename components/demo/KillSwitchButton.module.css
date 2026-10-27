@@ -1,0 +1,13 @@
+.figure { margin: 0; }
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 20px;
+  border-radius: 999px;
+  background: var(--color-alert-red);
+  color: var(--color-on-red);
+  font-weight: 600;
+}
+.caption { color: var(--color-text-2); margin-top: 8px; }

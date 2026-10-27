@@ -31,5 +31,11 @@ jobs:
       - name: Check alert colour
         run: npm run check:red
 
+      - name: Check copy
+        run: npm run check:copy
+
+      - name: Check tokens
+        run: npm run check:tokens
+
       - name: Build
         run: npm run build
